@@ -29,6 +29,7 @@ and the Mac see ordinary code; nothing to publish, no version to pin.
 | `src/product.ts` | **The product contract** — the only thing core needs from a product |
 | `scripts/dev-login-link.mjs` | One-time sign-in link without e-mail, in Terminal: the founder's own sign-in, and the fallback for Invite a tester |
 | `supabase/tests/local/auth_shim.sql` | Local `auth` schema so the RLS suite runs on plain Postgres |
+| `src/agents/{types,runner}.ts` | **The agents module**: the shapes of agent definitions, agents, runs, items and snapshots, the `AgentRunner` contract a product implements, and `runAgent()` — opens a run, calls the runner, closes it with tokens and cost. SQL: `core_030_agents.sql` |
 | `supabase/migrations/core_*.sql` | Core SQL that is identical in every product (see "Database" below) |
 
 ## Add core to a new product (Next.js 16 app at the repo root, `src/`)
@@ -112,6 +113,24 @@ never moved or edited. So for SQL, core is the **source** a new product copies f
 folder the CLI reads:
 
 - `core_001_tenancy.sql`, `core_003_entitlements_billing.sql` — verbatim in every product.
+- `core_007_admin_audit.sql`, `core_009_admin_rpcs.sql` — **the admin/audit cut (18 Oct 2026, from
+  artist-platform 007 + 009 §2 + 014)**: audit log, flags, `log_audit()`, `app.assert_superadmin()`,
+  `admin_list_accounts`, `admin_account_detail`, view-as, plan-feature / entitlement / settings / flag
+  RPCs — with no product table named. Product figures come through two hooks a product redefines in
+  its own migration: `app.overview_extra()` (tiles on the Overview) and `app.admin_account_extra(uuid)`
+  (keys on an account's list row and detail). First used verbatim by InvestX (its migrations 003 and 004);
+  artist-platform still runs its own 007/009/014 and moves to these when it next touches them.
+- `core_030_agents.sql` — **the agents module (18 Oct 2026)**: `agent_definitions` (a product seeds its
+  catalogue), `agents` (one person's agent: focus in `config`, confirmation text stored, quota
+  `agents.max` enforced by a trigger), `agent_runs` (tokens and cost per run), `agent_items` (the
+  person's thread: alerts, updates, answers, tickets), `collector_snapshots` (shared data, kept forever),
+  `social_sources` / `social_items` / `social_signals` (the social data collector shared with Mainfloor),
+  and the RPCs `create_agent`, `set_agent_status`, `agent_quota`, `admin_agent_costs`. Needs 001, 003
+  and 009. Runs after 020/024 in a product's order.
+- `core_018_plan_reads.sql` — `is_entitled()` / `effective_plan_id()` answer only for accounts the caller
+  may read (artist-platform PR #1's 018, 2 Oct 2026; taken first by New Venture on 18 Oct 2026, whose RLS
+  suite showed that any signed-in person, and visitors, could read any account's plan status with the core
+  as it stood). Verbatim in every product, after 003; Mainfloor gets it with PR #1 or as its own migration.
 - `core_024_feedback.sql` — the feedback board (artist-platform 024, 16 Oct 2026): `feedback_items`,
   `feedback_votes`, the view `feedback_board`, the person's RPCs and the audited `admin_feedback_*`.
   Not tenant data (no `account_id`). Needs `app.set_updated_at` (001), `app.is_service` /

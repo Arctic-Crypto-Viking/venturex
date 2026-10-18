@@ -1,0 +1,51 @@
+import type { CoreDict } from "./en";
+
+/** Español (tú). */
+export const es: CoreDict = {
+  login: {
+    signIn: "Iniciar sesión",
+    createAccount: "Crea tu cuenta",
+    introSignIn: "Te enviamos por correo un enlace y un código de 6 dígitos. Sin contraseña.",
+    introCreate: "Un correo, sin contraseña. Te enviamos un enlace y un código de 6 dígitos.",
+    linkFailed: "Ese enlace no ha iniciado tu sesión: puede que haya caducado (los enlaces duran una hora) o que ya se haya usado. Pide un correo nuevo abajo; también puedes escribir el código de 6 dígitos que contiene.",
+    sentTo: "Correo enviado a {email}. Abre el enlace que contiene o escribe aquí el código de 6 dígitos.",
+    codeLabel: "Código de 6 dígitos",
+    checking: "Comprobando…",
+    signInWithCode: "Entrar con el código",
+    otherEmail: "Usar otro correo",
+    emailLabel: "Correo electrónico",
+    sending: "Enviando…",
+    sendTheLink: "Envíame el enlace",
+    sendALink: "Envíame un enlace",
+    sendFailed: "No se pudo enviar el correo",
+    tooMany: "Demasiados correos de inicio de sesión en poco tiempo: espera unos minutos antes de pedir otro.",
+    notAuthorized: "Esta dirección aún no puede recibir correos de inicio de sesión. Pide un enlace a la persona que te invitó.",
+    codeFailed: "Ese código no ha funcionado",
+    privacy: "Privacidad",
+    signedInAs: "Sesión iniciada como",
+    continue: "Continuar",
+  },
+  continuePage: {
+    title: "Iniciar sesión",
+    body: "Este enlace inicia tu sesión en {app}. Un toque y estás dentro.",
+    button: "Continuar",
+    once: "El enlace funciona una sola vez. Si ya se ha usado, pide uno nuevo.",
+  },
+  controls: {
+    bright: "Claro",
+    dark: "Oscuro",
+    toBright: "Cambiar a claro",
+    toDark: "Cambiar a oscuro",
+    look: "Estilo",
+    changeLook: "Cambiar estilo",
+    language: "Idioma",
+    signOut: "Cerrar sesión",
+    looks: {
+      nordic: "Barra superior clásica",
+      ember: "Banda llamativa",
+      lagoon: "Píldora flotante",
+      orchid: "Cabecera editorial",
+      forest: "Barra lateral en pantallas anchas",
+    },
+  },
+};

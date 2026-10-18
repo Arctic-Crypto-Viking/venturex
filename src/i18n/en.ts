@@ -1,0 +1,51 @@
+/** Core's words in English: the source shape every other language must match (CoreDict). */
+export const en = {
+  login: {
+    signIn: "Sign in",
+    createAccount: "Create your account",
+    introSignIn: "We e-mail you a link and a 6-digit code. No password.",
+    introCreate: "One e-mail, no password. We send you a link and a 6-digit code.",
+    linkFailed: "That link didn't sign you in — it may have expired (links last one hour) or already been used. Request a new e-mail below; you can also type the 6-digit code from it.",
+    sentTo: "E-mail sent to {email}. Open the link in it, or type the 6-digit code here.",
+    codeLabel: "6-digit code",
+    checking: "Checking…",
+    signInWithCode: "Sign in with the code",
+    otherEmail: "Use a different e-mail",
+    emailLabel: "E-mail",
+    sending: "Sending…",
+    sendTheLink: "Send me the link",
+    sendALink: "Send me a link",
+    sendFailed: "Could not send the e-mail",
+    tooMany: "Too many sign-in e-mails in a short time — wait a few minutes before asking for another one.",
+    notAuthorized: "This address can't receive sign-in e-mail yet. Ask the person who invited you for a sign-in link.",
+    codeFailed: "That code didn't work",
+    privacy: "Privacy",
+    signedInAs: "Signed in as",
+    continue: "Continue",
+  },
+  continuePage: {
+    title: "Sign in",
+    body: "This link signs you in to {app}. One tap and you are in.",
+    button: "Continue",
+    once: "The link works once. If it has been used already, ask for a new one.",
+  },
+  controls: {
+    bright: "Bright",
+    dark: "Dark",
+    toBright: "Switch to bright",
+    toDark: "Switch to dark",
+    look: "Look",
+    changeLook: "Change look",
+    language: "Language",
+    signOut: "Sign out",
+    looks: {
+      nordic: "Classic top bar",
+      ember: "Bold band",
+      lagoon: "Floating pill",
+      orchid: "Editorial masthead",
+      forest: "Sidebar on wide screens",
+    },
+  },
+};
+
+export type CoreDict = typeof en;

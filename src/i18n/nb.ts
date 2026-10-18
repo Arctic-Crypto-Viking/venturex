@@ -1,0 +1,51 @@
+import type { CoreDict } from "./en";
+
+/** Norsk bokmål. */
+export const nb: CoreDict = {
+  login: {
+    signIn: "Logg inn",
+    createAccount: "Opprett konto",
+    introSignIn: "Vi sender deg en lenke og en sekssifret kode på e-post. Ingen passord.",
+    introCreate: "Én e-post, ingen passord. Vi sender deg en lenke og en sekssifret kode.",
+    linkFailed: "Den lenken logget deg ikke inn – den kan ha gått ut (lenker varer én time) eller allerede vært brukt. Be om en ny e-post nedenfor; du kan også skrive inn den sekssifrede koden fra den.",
+    sentTo: "E-post sendt til {email}. Åpne lenken i den, eller skriv inn den sekssifrede koden her.",
+    codeLabel: "Sekssifret kode",
+    checking: "Sjekker …",
+    signInWithCode: "Logg inn med koden",
+    otherEmail: "Bruk en annen e-postadresse",
+    emailLabel: "E-post",
+    sending: "Sender …",
+    sendTheLink: "Send meg lenken",
+    sendALink: "Send meg en lenke",
+    sendFailed: "Kunne ikke sende e-posten",
+    tooMany: "For mange innloggings-e-poster på kort tid – vent noen minutter før du ber om en ny.",
+    notAuthorized: "Denne adressen kan ikke motta innloggings-e-post ennå. Be personen som inviterte deg, om en innloggingslenke.",
+    codeFailed: "Den koden virket ikke",
+    privacy: "Personvern",
+    signedInAs: "Logget inn som",
+    continue: "Fortsett",
+  },
+  continuePage: {
+    title: "Logg inn",
+    body: "Denne lenken logger deg inn på {app}. Ett trykk, så er du inne.",
+    button: "Fortsett",
+    once: "Lenken virker én gang. Hvis den allerede er brukt, ber du om en ny.",
+  },
+  controls: {
+    bright: "Lys",
+    dark: "Mørk",
+    toBright: "Bytt til lys",
+    toDark: "Bytt til mørk",
+    look: "Utseende",
+    changeLook: "Endre utseende",
+    language: "Språk",
+    signOut: "Logg ut",
+    looks: {
+      nordic: "Klassisk topplinje",
+      ember: "Kraftig bånd",
+      lagoon: "Flytende pille",
+      orchid: "Redaksjonelt hode",
+      forest: "Sidefelt på brede skjermer",
+    },
+  },
+};

@@ -1,0 +1,51 @@
+import type { CoreDict } from "./en";
+
+/** Deutsch (du). */
+export const de: CoreDict = {
+  login: {
+    signIn: "Anmelden",
+    createAccount: "Konto erstellen",
+    introSignIn: "Wir schicken dir einen Link und einen 6-stelligen Code per E-Mail. Kein Passwort.",
+    introCreate: "Eine E-Mail, kein Passwort. Wir schicken dir einen Link und einen 6-stelligen Code.",
+    linkFailed: "Dieser Link hat dich nicht angemeldet – vielleicht ist er abgelaufen (Links gelten eine Stunde) oder wurde schon benutzt. Fordere unten eine neue E-Mail an; du kannst auch den 6-stelligen Code daraus eingeben.",
+    sentTo: "E-Mail an {email} gesendet. Öffne den Link darin oder gib hier den 6-stelligen Code ein.",
+    codeLabel: "6-stelliger Code",
+    checking: "Wird geprüft …",
+    signInWithCode: "Mit dem Code anmelden",
+    otherEmail: "Andere E-Mail-Adresse verwenden",
+    emailLabel: "E-Mail",
+    sending: "Wird gesendet …",
+    sendTheLink: "Schick mir den Link",
+    sendALink: "Schick mir einen Link",
+    sendFailed: "Die E-Mail konnte nicht gesendet werden",
+    tooMany: "Zu viele Anmelde-E-Mails in kurzer Zeit – warte ein paar Minuten, bevor du eine neue anforderst.",
+    notAuthorized: "An diese Adresse können noch keine Anmelde-E-Mails gehen. Bitte die Person, die dich eingeladen hat, um einen Anmeldelink.",
+    codeFailed: "Dieser Code hat nicht funktioniert",
+    privacy: "Datenschutz",
+    signedInAs: "Angemeldet als",
+    continue: "Weiter",
+  },
+  continuePage: {
+    title: "Anmelden",
+    body: "Mit diesem Link meldest du dich bei {app} an. Ein Tipp und du bist drin.",
+    button: "Weiter",
+    once: "Der Link funktioniert nur einmal. Wenn er schon benutzt wurde, fordere einen neuen an.",
+  },
+  controls: {
+    bright: "Hell",
+    dark: "Dunkel",
+    toBright: "Zu hell wechseln",
+    toDark: "Zu dunkel wechseln",
+    look: "Design",
+    changeLook: "Design ändern",
+    language: "Sprache",
+    signOut: "Abmelden",
+    looks: {
+      nordic: "Klassische Kopfleiste",
+      ember: "Kräftiges Band",
+      lagoon: "Schwebende Pille",
+      orchid: "Redaktioneller Kopf",
+      forest: "Seitenleiste auf breiten Bildschirmen",
+    },
+  },
+};

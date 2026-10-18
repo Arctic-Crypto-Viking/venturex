@@ -1,0 +1,296 @@
+/*
+ * Design tokens — the only place colours, radii, fonts and shadows are defined.
+ * Two independent choices, both made by the person and kept in cookies, never
+ * taken from the device:
+ *   html[data-theme="dark"|"light"]                         Dark / Bright
+ *   html[data-template="nordic|ember|lagoon|orchid|forest"]  Look (Atlas UI)
+ * A look sets the palette for both themes, the fonts, the corner radii and the
+ * header style. Templates are attribute-scoped, so any element can carry its own
+ * data-template (the Look picker's swatches use this).
+ * Platform core (core/README.md): a product imports this file right after
+ * Tailwind in its own src/app/globals.css and adds only product rules there.
+ */
+
+/* ---------- Status colours: shared by every look ---------- */
+:root {
+  --success: #1e9e6a;
+  --success-soft: #e6f7ef;
+  --warn: #b7791f;
+  --warn-soft: #fff5e0;
+  --danger: #d1435b;
+  --danger-soft: #fdecef;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --success: #3ccf8e;
+  --success-soft: #123326;
+  --warn: #e0a84a;
+  --warn-soft: #3a2c12;
+  --danger: #ff6b81;
+  --danger-soft: #3d1a22;
+  color-scheme: dark;
+}
+
+/* ---------- Looks: Bright values ---------- */
+
+/* Nordic — calm product blue, classic top bar (default) */
+:root, [data-template="nordic"] {
+  --bg: #f5f7fa; --surface: #ffffff; --surface-2: #edf1f6;
+  --border: #dde3ec; --border-strong: #c3ccd9;
+  --fg: #16202e; --muted: #5a6577; --faint: #8e98a8;
+  --accent: #2f5bd3; --accent-hover: #244ab5; --accent-soft: #e3eafb; --accent-fg: #ffffff; --ring: #2f5bd3;
+  --header-bg: color-mix(in srgb, var(--surface) 88%, transparent); --header-fg: var(--fg); --header-muted: var(--muted); --header-border: var(--border);
+  --font-body: "IBM Plex Sans Variable", ui-sans-serif, system-ui, sans-serif; --font-head: var(--font-body);
+  --r-lg: 0.5rem; --r-xl: 0.75rem; --r-2xl: 1rem; --r-3xl: 1.25rem;
+  --shadow-card: 0 1px 2px rgb(22 32 46 / 0.05), 0 10px 30px -18px rgb(22 32 46 / 0.18);
+  --shadow-pop: 0 2px 6px rgb(22 32 46 / 0.08), 0 20px 50px -20px rgb(22 32 46 / 0.28);
+}
+
+/* Ember — warm orange, bold dark header band with an accent rule */
+[data-template="ember"] {
+  --bg: #fbf7f3; --surface: #ffffff; --surface-2: #f4ebe4;
+  --border: #e7d8cc; --border-strong: #d4bfae;
+  --fg: #2a1c15; --muted: #735f53; --faint: #a38f82;
+  --accent: #cf4f17; --accent-hover: #b14313; --accent-soft: #fbe3d6; --accent-fg: #ffffff; --ring: #cf4f17;
+  --header-bg: #22160f; --header-fg: #fbeee5; --header-muted: #c7ad9c; --header-border: var(--accent);
+  --font-body: "Archivo Variable", "Helvetica Neue", Arial, sans-serif; --font-head: var(--font-body);
+  --r-lg: 0.25rem; --r-xl: 0.375rem; --r-2xl: 0.5rem; --r-3xl: 0.625rem;
+  --shadow-card: 0 2px 0 rgb(42 28 21 / 0.08);
+  --shadow-pop: 0 4px 0 rgb(42 28 21 / 0.08), 0 18px 40px -20px rgb(42 28 21 / 0.35);
+}
+
+/* Lagoon — fresh teal, soft corners, floating pill header */
+[data-template="lagoon"] {
+  --bg: #eff7f7; --surface: #ffffff; --surface-2: #e2f0f0;
+  --border: #cbe1e1; --border-strong: #a9cccc;
+  --fg: #0f272a; --muted: #4c696c; --faint: #81a0a2;
+  --accent: #0a7f80; --accent-hover: #086b6c; --accent-soft: #d4eeed; --accent-fg: #ffffff; --ring: #0a7f80;
+  --header-bg: color-mix(in srgb, var(--surface) 78%, transparent); --header-fg: var(--fg); --header-muted: var(--muted); --header-border: var(--border);
+  --font-body: "DM Sans Variable", ui-sans-serif, system-ui, sans-serif; --font-head: var(--font-body);
+  --r-lg: 0.75rem; --r-xl: 1.125rem; --r-2xl: 1.5rem; --r-3xl: 1.75rem;
+  --shadow-card: 0 8px 30px -12px rgb(15 39 42 / 0.14);
+  --shadow-pop: 0 12px 40px -12px rgb(15 39 42 / 0.25);
+}
+
+/* Orchid — editorial plum, serif headings, centred masthead */
+[data-template="orchid"] {
+  --bg: #fbf7fa; --surface: #ffffff; --surface-2: #f4eaf1;
+  --border: #e8d6e2; --border-strong: #d2b9ca;
+  --fg: #2a1527; --muted: #6e5869; --faint: #a08d9b;
+  --accent: #962a76; --accent-hover: #7e2263; --accent-soft: #f5e0ee; --accent-fg: #ffffff; --ring: #962a76;
+  --header-bg: var(--bg); --header-fg: var(--fg); --header-muted: var(--muted); --header-border: var(--fg);
+  --font-body: "Source Sans 3 Variable", ui-sans-serif, system-ui, sans-serif; --font-head: "Fraunces Variable", Georgia, serif;
+  --r-lg: 0.25rem; --r-xl: 0.375rem; --r-2xl: 0.5rem; --r-3xl: 0.75rem;
+  --shadow-card: 0 1px 0 rgb(42 21 39 / 0.06), 0 10px 24px -14px rgb(42 21 39 / 0.18);
+  --shadow-pop: 0 2px 6px rgb(42 21 39 / 0.08), 0 20px 50px -20px rgb(42 21 39 / 0.28);
+}
+
+/* Forest — grounded green for daily work, sidebar header on wide screens */
+[data-template="forest"] {
+  --bg: #f3f4ef; --surface: #ffffff; --surface-2: #e9ebe3;
+  --border: #d8dbcf; --border-strong: #bfc4b3;
+  --fg: #1a241d; --muted: #5d6960; --faint: #8f9a91;
+  --accent: #2c6a48; --accent-hover: #22573a; --accent-soft: #dcebe2; --accent-fg: #ffffff; --ring: #2c6a48;
+  --header-bg: #1b3125; --header-fg: #e8efe9; --header-muted: #a9bcae; --header-border: #1b3125;
+  --font-body: "Manrope Variable", ui-sans-serif, system-ui, sans-serif; --font-head: var(--font-body);
+  --r-lg: 0.375rem; --r-xl: 0.5rem; --r-2xl: 0.75rem; --r-3xl: 1rem;
+  --shadow-card: 0 1px 3px rgb(26 36 29 / 0.08);
+  --shadow-pop: 0 2px 6px rgb(26 36 29 / 0.1), 0 20px 50px -20px rgb(26 36 29 / 0.3);
+}
+
+/* ---------- Looks: Dark values ---------- */
+[data-theme="dark"][data-template="nordic"], [data-theme="dark"] [data-template="nordic"], :root[data-theme="dark"]:not([data-template]) {
+  --bg: #0e131b; --surface: #151c27; --surface-2: #1c2532;
+  --border: #2a3546; --border-strong: #3b4a60;
+  --fg: #e5eaf1; --muted: #97a2b4; --faint: #677388;
+  --accent: #7d9ef2; --accent-hover: #9bb4f5; --accent-soft: #1d2944; --accent-fg: #0e131b; --ring: #7d9ef2;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 30px -18px rgb(0 0 0 / 0.6);
+  --shadow-pop: 0 2px 6px rgb(0 0 0 / 0.4), 0 20px 50px -20px rgb(0 0 0 / 0.7);
+}
+[data-theme="dark"][data-template="ember"], [data-theme="dark"] [data-template="ember"] {
+  --bg: #16100c; --surface: #201813; --surface-2: #2a201a;
+  --border: #3b2d24; --border-strong: #4f3d31;
+  --fg: #f4e9e1; --muted: #b5a194; --faint: #7f6d61;
+  --accent: #f27c40; --accent-hover: #f6955f; --accent-soft: #3a2115; --accent-fg: #16100c; --ring: #f27c40;
+  --header-bg: #0d0907; --header-fg: #f4e9e1; --header-muted: #b5a194;
+  --shadow-card: 0 2px 0 rgb(0 0 0 / 0.35);
+  --shadow-pop: 0 4px 0 rgb(0 0 0 / 0.35), 0 18px 40px -20px rgb(0 0 0 / 0.7);
+}
+[data-theme="dark"][data-template="lagoon"], [data-theme="dark"] [data-template="lagoon"] {
+  --bg: #0a191b; --surface: #102326; --surface-2: #152f32;
+  --border: #224144; --border-strong: #2f5559;
+  --fg: #e0f0f0; --muted: #8eafb1; --faint: #5d7e80;
+  --accent: #3cc3bf; --accent-hover: #62d2cf; --accent-soft: #123a3b; --accent-fg: #052022; --ring: #3cc3bf;
+  --shadow-card: 0 8px 30px -12px rgb(0 0 0 / 0.5);
+  --shadow-pop: 0 12px 40px -12px rgb(0 0 0 / 0.7);
+}
+[data-theme="dark"][data-template="orchid"], [data-theme="dark"] [data-template="orchid"] {
+  --bg: #160d15; --surface: #20141e; --surface-2: #2a1b28;
+  --border: #3d2a3a; --border-strong: #533b4f;
+  --fg: #f4e6f0; --muted: #b8a0b3; --faint: #82697d;
+  --accent: #e57bc1; --accent-hover: #ec98cf; --accent-soft: #3a1c32; --accent-fg: #160d15; --ring: #e57bc1;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 30px -18px rgb(0 0 0 / 0.6);
+  --shadow-pop: 0 2px 6px rgb(0 0 0 / 0.4), 0 20px 50px -20px rgb(0 0 0 / 0.7);
+}
+[data-theme="dark"][data-template="forest"], [data-theme="dark"] [data-template="forest"] {
+  --bg: #0e1310; --surface: #151c17; --surface-2: #1c251f;
+  --border: #2a362e; --border-strong: #3a4a3f;
+  --fg: #e4eae5; --muted: #99a69c; --faint: #66736a;
+  --accent: #6fbf8e; --accent-hover: #8dcfa6; --accent-soft: #1a3125; --accent-fg: #0e1310; --ring: #6fbf8e;
+  --header-bg: #0a0f0c; --header-fg: #e4eae5; --header-muted: #99a69c; --header-border: #0a0f0c;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 30px -18px rgb(0 0 0 / 0.6);
+  --shadow-pop: 0 2px 6px rgb(0 0 0 / 0.4), 0 20px 50px -20px rgb(0 0 0 / 0.7);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-fg: var(--accent-fg);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-ring: var(--ring);
+  --shadow-card: var(--shadow-card);
+  --shadow-pop: var(--shadow-pop);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-head);
+  --radius-lg: var(--r-lg);
+  --radius-xl: var(--r-xl);
+  --radius-2xl: var(--r-2xl);
+  --radius-3xl: var(--r-3xl);
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    min-height: 100dvh;
+  }
+  ::selection {
+    background: var(--accent-soft);
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 0.5rem;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-head);
+    letter-spacing: -0.015em;
+  }
+  input, select, textarea, button {
+    font: inherit;
+  }
+}
+
+/* =====================================================================
+   Header — one markup (app + admin layouts), five layouts.
+   Unlayered on purpose: these rules win over the Tailwind utilities in the
+   markup, so a look can rearrange the header without touching the TSX.
+   Hooks: .ap-shell > .ap-header > .ap-header-row > (.ap-brand, .ap-nav > .ap-link)
+          .ap-names (identity chips), .ap-content (page body)
+   ===================================================================== */
+.ap-header {
+  --hpad: 1.25rem;
+  position: sticky; top: 0; z-index: 10;
+  margin-inline: calc(-1 * var(--hpad));
+  padding: max(0.75rem, env(safe-area-inset-top)) var(--hpad) 0.625rem;
+  background: var(--header-bg); color: var(--header-fg);
+  border-bottom: 1px solid var(--header-border);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+}
+.ap-header--admin { position: static; margin-bottom: 1.5rem; padding-bottom: 1rem; }
+.ap-header-row { display: flex; min-height: 2.25rem; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.ap-brand > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ap-brand {
+  display: flex; min-width: 0; align-items: center; gap: 0.625rem;
+  font-family: var(--font-head); font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: inherit;
+}
+.ap-nav { display: flex; align-items: center; gap: 0.25rem; font-size: 0.875rem; }
+.ap-link {
+  display: inline-flex; align-items: center; border-radius: var(--r-lg);
+  padding: 0.375rem 0.625rem; white-space: nowrap; color: var(--header-muted); transition: color .15s, background-color .15s;
+}
+.ap-link:hover { background: color-mix(in srgb, var(--header-fg) 8%, transparent); color: var(--header-fg); }
+.ap-link[aria-current="page"] { color: var(--header-fg); }
+.ap-link--wide { display: none; }
+@media (min-width: 640px) { .ap-link--wide { display: inline-flex; } }
+.ap-names { margin-inline: calc(-1 * var(--hpad)); padding-inline: var(--hpad); }
+
+/* Looks whose header is a dark band in both themes: give everything inside it
+   matching local tokens, so buttons, chips and the switches stay readable. */
+[data-template="ember"] .ap-header, [data-template="forest"] .ap-header {
+  --fg: var(--header-fg); --muted: var(--header-muted); --faint: var(--header-muted);
+  --bg: var(--header-bg);
+  --surface: color-mix(in srgb, var(--header-fg) 8%, var(--header-bg));
+  --surface-2: color-mix(in srgb, var(--header-fg) 14%, var(--header-bg));
+  --border: color-mix(in srgb, var(--header-fg) 20%, var(--header-bg));
+  --border-strong: color-mix(in srgb, var(--header-fg) 34%, var(--header-bg));
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+
+/* Nordic — underline marks the current page */
+[data-template="nordic"] .ap-link[aria-current="page"] { box-shadow: inset 0 -2px 0 var(--accent); border-radius: 0; }
+
+/* Ember — thick accent rule, uppercase nav, filled current page */
+[data-template="ember"] .ap-header { border-bottom-width: 4px; }
+[data-template="ember"] .ap-brand { font-weight: 800; letter-spacing: -0.02em; }
+[data-template="ember"] .ap-link { text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.75rem; font-weight: 700; }
+[data-template="ember"] .ap-link[aria-current="page"] { background: var(--accent); color: var(--accent-fg); }
+
+/* Lagoon — detached floating pill */
+[data-template="lagoon"] .ap-header {
+  --hpad: 1rem;
+  top: calc(env(safe-area-inset-top) + 0.75rem);
+  margin: calc(env(safe-area-inset-top) + 0.75rem) 0 0;
+  padding: 0.5rem var(--hpad);
+  border: 1px solid var(--header-border); border-radius: 1.5rem;
+  box-shadow: var(--shadow-pop);
+}
+[data-template="lagoon"] .ap-header--admin { margin-bottom: 1.5rem; }
+[data-template="lagoon"] .ap-link { border-radius: 999px; }
+[data-template="lagoon"] .ap-link[aria-current="page"] { background: var(--accent-soft); color: var(--accent); }
+
+/* Orchid — centred masthead over a ruled nav row */
+[data-template="orchid"] .ap-header { border-top: 3px double var(--header-border); -webkit-backdrop-filter: none; backdrop-filter: none; }
+[data-template="orchid"] .ap-header-row { flex-wrap: wrap; justify-content: center; row-gap: 0.5rem; }
+[data-template="orchid"] .ap-brand { flex-basis: 100%; justify-content: center; font-size: 1.625rem; font-style: italic; font-weight: 600; }
+[data-template="orchid"] .ap-nav { flex-basis: 100%; flex-wrap: wrap; justify-content: center; border-top: 1px solid var(--border); padding-top: 0.375rem; }
+[data-template="orchid"] .ap-link { font-size: 0.9375rem; }
+[data-template="orchid"] .ap-link[aria-current="page"] { color: var(--accent); font-style: italic; }
+
+/* Forest — full-height sidebar on wide screens (signed-in app only) */
+@media (min-width: 1024px) {
+  [data-template="forest"] .ap-shell {
+    display: grid; grid-template-columns: 15rem minmax(0, 48rem); column-gap: 2.5rem;
+    max-width: none; margin: 0; padding-left: 0; align-items: start;
+  }
+  [data-template="forest"] .ap-shell > .ap-header {
+    grid-row: 1 / span 2; position: sticky; top: 0; height: 100dvh; overflow-y: auto;
+    margin: 0; padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 1.25rem;
+    border-bottom: 0; border-right: 1px solid var(--header-border);
+  }
+  [data-template="forest"] .ap-shell > .ap-header .ap-header-row { flex-direction: column; align-items: stretch; gap: 1.25rem; }
+  [data-template="forest"] .ap-shell > .ap-header .ap-nav { flex-direction: column; align-items: stretch; font-size: 0.9375rem; }
+  [data-template="forest"] .ap-shell > .ap-header .ap-link { display: flex; padding: 0.5rem 0.75rem; }
+  [data-template="forest"] .ap-shell > .ap-header .ap-names { flex-wrap: wrap; margin: 0; padding: 0; overflow: visible; }
+  [data-template="forest"] .ap-shell > .ap-header .ap-picker-panel { left: 0; right: auto; }
+  [data-template="forest"] .ap-content { grid-column: 2; }
+}
+[data-template="forest"] .ap-link[aria-current="page"] { background: color-mix(in srgb, var(--header-fg) 12%, transparent); color: var(--header-fg); }

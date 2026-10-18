@@ -1,0 +1,51 @@
+import type { CoreDict } from "./en";
+
+/** Français (vous). */
+export const fr: CoreDict = {
+  login: {
+    signIn: "Se connecter",
+    createAccount: "Créez votre compte",
+    introSignIn: "Nous vous envoyons par e-mail un lien et un code à 6 chiffres. Pas de mot de passe.",
+    introCreate: "Un e-mail, pas de mot de passe. Nous vous envoyons un lien et un code à 6 chiffres.",
+    linkFailed: "Ce lien ne vous a pas connecté : il a peut-être expiré (les liens sont valables une heure) ou a déjà été utilisé. Demandez un nouvel e-mail ci-dessous ; vous pouvez aussi saisir le code à 6 chiffres qu'il contient.",
+    sentTo: "E-mail envoyé à {email}. Ouvrez le lien qu'il contient ou saisissez ici le code à 6 chiffres.",
+    codeLabel: "Code à 6 chiffres",
+    checking: "Vérification…",
+    signInWithCode: "Se connecter avec le code",
+    otherEmail: "Utiliser une autre adresse e-mail",
+    emailLabel: "E-mail",
+    sending: "Envoi…",
+    sendTheLink: "Envoyez-moi le lien",
+    sendALink: "Envoyez-moi un lien",
+    sendFailed: "Impossible d'envoyer l'e-mail",
+    tooMany: "Trop d'e-mails de connexion en peu de temps : attendez quelques minutes avant d'en demander un autre.",
+    notAuthorized: "Cette adresse ne peut pas encore recevoir d'e-mails de connexion. Demandez un lien de connexion à la personne qui vous a invité.",
+    codeFailed: "Ce code n'a pas fonctionné",
+    privacy: "Confidentialité",
+    signedInAs: "Connecté en tant que",
+    continue: "Continuer",
+  },
+  continuePage: {
+    title: "Se connecter",
+    body: "Ce lien vous connecte à {app}. Un geste et vous y êtes.",
+    button: "Continuer",
+    once: "Le lien ne fonctionne qu'une fois. S'il a déjà été utilisé, demandez-en un nouveau.",
+  },
+  controls: {
+    bright: "Clair",
+    dark: "Sombre",
+    toBright: "Passer en clair",
+    toDark: "Passer en sombre",
+    look: "Apparence",
+    changeLook: "Changer l'apparence",
+    language: "Langue",
+    signOut: "Se déconnecter",
+    looks: {
+      nordic: "Barre supérieure classique",
+      ember: "Bandeau affirmé",
+      lagoon: "Pilule flottante",
+      orchid: "En-tête éditorial",
+      forest: "Barre latérale sur grand écran",
+    },
+  },
+};

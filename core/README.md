@@ -115,16 +115,22 @@ folder the CLI reads:
 - `core_024_feedback.sql` — the feedback board (artist-platform 024, 16 Oct 2026): `feedback_items`,
   `feedback_votes`, the view `feedback_board`, the person's RPCs and the audited `admin_feedback_*`.
   Not tenant data (no `account_id`). Needs `app.set_updated_at` (001), `app.is_service` /
-  `app.is_superadmin` (001), `log_audit` (007), `app.assert_superadmin` (009), and works with 020.
+  `app.is_superadmin` (001), `log_audit` and `app.assert_superadmin` (`core_007`), and works with 020.
+- `core_007_admin_audit.sql` — the admin console's SQL (cut on 18 Oct 2026 in the New Venture repo
+  from artist-platform 007 + 009 + 014, artist code removed): `audit_log` + `log_audit()`, the audit
+  triggers on the core tables, `feature_flags` + `flag_enabled()`, `app.current_impersonation()`,
+  `app.assert_superadmin()`, `internal_overview()`, `admin_list_accounts`, `admin_account_detail`,
+  view-as, `admin_set_plan_feature`, `admin_set_account_entitlement`, settings and flag RPCs,
+  `owner_setting`, and three **hooks** a product redefines in its own migration (`create or
+  replace`): `app.overview_extra()` (tiles), `app.admin_account_extra(uuid)` (keys on every accounts
+  row and on the detail), `app.admin_account_matches(uuid, text)` (the accounts search). Needs 001
+  and 003. Order in a product: 001, 003, 007, 020, 024, 018. Mainfloor still runs its 007/009/014;
+  when it takes this file it keeps its hook bodies.
+- `core_018_plan_reads.sql` — `is_entitled()` / `effective_plan_id()` answer only for accounts the
+  caller may read (artist-platform PR #1's 018, 2 Oct 2026). Verbatim in every product.
 - `core_020_admin_delete_account.sql` — `admin_delete_account()`, behind **Admin → Accounts →
   Delete account** (artist-platform 020, 15 Oct 2026). Verbatim in every product, as its next
   migration number. It names no product table (tables and user references come from the
-  catalogue), but it needs the admin/audit SQL below that is not cut yet: `audit_log`,
-  `log_audit()`, `app.current_impersonation()` (007) and `app.assert_superadmin()` (009). The
-  product says which Storage buckets hold an account's files: `admin.storageBuckets` in
-  `src/product.tsx`.
-- Still to cut (needs a session with Postgres so the RLS suite runs green, PLATFORM-CORE §4
-  rule 4): the generalised admin/audit and admin RPCs (`app.overview_extra`,
-  `app.admin_account_extra`, `admin_list_accounts`, `admin_account_detail`, settings/flag/grant
-  RPCs). Today they exist as artist-platform 007 + 009 + 014 with artist code mixed in.
-  A new product before that cut copies those three files and replaces the hook bodies.
+  catalogue). It needs `audit_log`, `log_audit()`, `app.current_impersonation()` and
+  `app.assert_superadmin()` from `core_007`. The product says which Storage buckets hold an
+  account's files: `admin.storageBuckets` in `src/product.tsx`.

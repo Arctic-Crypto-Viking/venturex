@@ -7,10 +7,10 @@ whenever a line below stops being true.
 
 | Area | State | Source |
 |---|---|---|
-| Repo | Created 18 Oct 2026 from `docs/HANDOFF.md` (atlas-os PR #3). B0 and B1 built in the cloud session. | this repo |
-| Core | `core/` = git subtree of `platform-core` `main` at `3390113` (17 Oct). Core SQL copied verbatim: 001, 003, 020, 024; **007 (admin/audit) cut here from artist-platform 007 + 009 + 014** and pushed to `platform-core` as a branch for the founder's merge. | `supabase/migrations/`, `core/` |
-| Database | No hosted project yet. The migrations run green on a fresh local Postgres 16 (`supabase/tests/local/run.sh`): migrations + the RLS suite. | the build session |
-| App | Builds and lints. Sign-in, Continue, admin console (404 for non-superadmins), feedback board, `/privacy`, the landing page, `/app` home placeholder. No door yet (B2). | `npm run build && npm run lint` |
+| Repo | `Arctic-Crypto-Viking/venturex`, created by the founder on 18 Oct 2026; B0 and B1 built in the cloud session from `docs/HANDOFF.md` (atlas-os PR #3) and pushed to `main`. The repo is named venturex; the product's working name stays "New Venture" until the founder decides (HANDOFF §10 D1). | this repo |
+| Core | `core/` = git subtree of `platform-core` `main` at `3390113` (17 Oct). Core SQL copied verbatim: 001, 003, 020, 024, and 018 (plan reads, from artist-platform PR #1 — it closed two suite failures here: anyone could read any account's plan status); **007 (admin/audit) cut here from artist-platform 007 + 009 + 014**. Both new core files sit in `core/supabase/migrations/` and go to `platform-core` as branch `core-007-admin-audit` (draft PR) for the founder's merge. | `supabase/migrations/`, `core/` |
+| Database | No hosted project yet. Seven migrations (001–007) run green on a fresh local Postgres 16 with the RLS suite: 26 checks, the zero-leak scan over 12 tenant tables, the superadmin path audited, the feedback board, delete account (`supabase/tests/local/run.sh`, 18 Oct). | the build session |
+| App | Builds and lints (18 Oct). Sign-in, Continue, admin console (404 for non-superadmins), feedback board, `/privacy`, the landing page from the sketch, `/app` home placeholder. Checked at 390 px in all five looks, Dark and Bright: no horizontal overflow; `/admin` answers 404 to a visitor. No door yet (B2). | `npm run build && npm run lint`; screenshots in the build session |
 | Deployment | None. Supabase project (Frankfurt), superadmin flag, Vercel, subdomain: the founder's steps, `docs/HANDOFF.md` §9. | — |
 | Name, seller, prices | Working name "New Venture"; the seller company and every price undecided (HANDOFF §10 D1–D3). No price shown anywhere. | `src/brand.ts` |
 
@@ -27,6 +27,6 @@ whenever a line below stops being true.
 
 ## Waiting on the founder
 
-- The empty `new-venture` repository on GitHub (the session cannot create one) — then the push.
+- (Done 18 Oct: the repository exists as `Arctic-Crypto-Viking/venturex`; B0 and B1 are pushed to `main`.)
 - Decisions D1–D3 (defaults in HANDOFF §10 apply meanwhile); D2 stops any outgoing mail and the paid test.
 - The merge of `platform-core`'s `core_007_admin_audit` branch, so InvestX takes the same file.

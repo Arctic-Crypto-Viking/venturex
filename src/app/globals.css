@@ -1,0 +1,11 @@
+@import "tailwindcss";
+/* Tokens, the five looks and the header hooks: platform core, never edited here. */
+@import "../../core/src/styles/core.css";
+
+/* Product-only rules go below this line. */
+
+/* The mark (src/components/brand.tsx). Bright: an accent tile with the door in
+   accent-fg. Dark: accent-fg is dark there, which would turn the door into a
+   shadow, so the tile drops to accent-soft and the door takes the accent. */
+.ap-mark { --mark-tile: var(--accent); --mark-light: var(--accent-fg); }
+[data-theme="dark"] .ap-mark { --mark-tile: var(--accent-soft); --mark-light: var(--accent); }

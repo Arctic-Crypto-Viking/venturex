@@ -10,8 +10,8 @@ core (`core/`, a git subtree of `Arctic-Crypto-Viking/platform-core`); the metho
 ## Status (18 Oct 2026)
 
 B0 (this repo) and B1 (the shell on the core: sign-in, admin console, feedback board,
-five looks, five languages, privacy page; core SQL 001, 003, 007, 020, 024 plus the
-product's reference data; RLS suite green on a fresh Postgres) are built in the cloud
+five looks, five languages, privacy page; core SQL 001, 003, 007, 009, 020, 024, 018 from
+platform-core PR #1 plus the product's reference data; RLS suite green on a fresh Postgres) are built in the cloud
 session. Nothing is applied to a hosted database and nothing is deployed: the Supabase
 project, the superadmin flag, Vercel and the subdomain are the founder's steps
 (`docs/HANDOFF.md` §9). Next: B2, the door (`docs/HANDOFF.md` §8). `STATE.md` has the
@@ -119,7 +119,7 @@ node scripts/dev-login-link.mjs you@example.com                # a sign-in link 
 | Step | Scope | Status |
 |---|---|---|
 | B0 | repo, `CLAUDE.md`, `STATE.md`, `DECISIONS.md`, `docs/HANDOFF.md`, `assumptions.md`, `later.md` | built 18 Oct |
-| B1 | shell on the core; core SQL 001/003/007/020/024 + reference data; RLS suite | built 18 Oct · founder's hosted steps pending |
+| B1 | shell on the core; core SQL 001/003/007/009/020/024/018 + reference data; RLS suite | built 18 Oct · founder's hosted steps pending |
 | B2 | the door: `ventures`, `door_runs`, `evidence`, `decisions`, `tests`, `create_venture`, `record_door_run`, the `/door/*` screens, `/app`, the card | next |
 | B3 | the workspace: stages, ledger, decisions, tests, offer, team | |
 | B4 | the record moves to the product | |

@@ -74,7 +74,7 @@ insert into public.system_settings (key, value, description) values
 on conflict (key) do update set value = excluded.value, description = excluded.description;
 
 -- ---------------------------------------------------------------------------
--- The admin console's hooks (core_007 §2), this product's bodies. B2 fills them
+-- The admin console's hooks (core_007 §2, core_009), this product's bodies. B2 fills them
 -- from `ventures` and the latest door run; until then: no figures, no keys.
 -- ---------------------------------------------------------------------------
 create or replace function app.overview_extra()

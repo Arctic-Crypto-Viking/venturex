@@ -16,6 +16,17 @@ whenever a line below stops being true.
 | Seller, prices | Undecided (HANDOFF §10 D2, D3). No price shown anywhere. `company` in `src/brand.ts` says "to be named". | `src/brand.ts` |
 | Project material | In the repo since 19 Oct: `docs/concept.md`, `docs/design/` (the canvas copy, the first sketch as text), `docs/research/competition-analysis/` (the 3 Oct doc, five tabs). | this repo |
 
+## Blocked on 19 Oct 2026: the hosted setup
+
+The Supabase organization "pasai Ventures" (`ljdaqizgdrmojbbiymby`) is on the **Free plan, which allows
+two active projects**, and both are in use: `artist-platform` (xklhgcnzbtcilgnljbvu) and `investx`
+(xbwdihlpriukmidwmqqz), both eu-central-1. A `supabase projects create venturex` on 19 Oct was refused
+on that basis. The founder's options: upgrade the organization to Pro (a payment, Supabase's own
+dashboard → Organization → Billing), or pause the `investx` project until it is needed (it is not
+deployed either), which frees a slot. The Supabase CLI on this Mac is signed in; the Vercel CLI is
+not (`npx vercel login`), and the GitHub CLI is. A database password for the new project was
+generated and kept outside the repo (the session's scratchpad), to be regenerated if lost.
+
 ## The founder's steps (verified against `core/README.md` and the suite; nothing here is done by a session)
 
 1. **Supabase project**, region eu-central-1 (Frankfurt). Keys into `.env.local`

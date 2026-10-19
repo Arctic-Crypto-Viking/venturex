@@ -28,7 +28,9 @@ whenever a line below stops being true.
 | Vercel ↔ GitHub | **not connected**: `vercel git connect` was refused (the Vercel GitHub app has no access to `Arctic-Crypto-Viking/venturex`); until the founder grants it in Vercel → Settings → Git, deploys are `npx vercel deploy --prod` from the Mac |
 | Domain | `venturex.aintegration.org` assigned to the Vercel project; DNS at Domeneshop (zone `aintegration.org`, nameservers hyp.net): `CNAME venturex → cname.vercel-dns.com`, TTL 1 h, added 19 Oct |
 | Repo visibility | `Arctic-Crypto-Viking/venturex` is **public** (created so on 18 Oct); HANDOFF §8 B0 asked for private. No secrets are in it. The founder decides |
-| Not done | the founder's first sign-in, the superadmin flag and the comped founder plan (below); Resend / `ANTHROPIC_API_KEY` (optional) |
+| Keys | **`supabase projects api-keys` masks the secret key unless `--reveal` is passed**; the first deploy carried a 67-character placeholder as `SUPABASE_SECRET_KEY` and the REST API answered "Invalid API key". Fixed 19 Oct: the revealed 41-character `sb_secret_…` is in `.env.local` and on Vercel (Production + Preview); redeployed. The publishable key was right all along |
+| Founder login | `a.crypto.viking@gmail.com`: login created on 19 Oct by the sign-in link (user `0d795a83-8ab3-405f-8696-b00938fef20a`), `is_superadmin = true` set by SQL; an internal account `founder` (slug) on the founder plan with a comped subscription, so his first venture through the door takes the plan and the comp over. The one-time link was handed to him in chat (valid one hour, used once) |
+| Not done | the founder's first sign-in and exit test 1; Resend / `ANTHROPIC_API_KEY` (optional); the Vercel–GitHub link (above) |
 
 ## The founder's steps (verified against `core/README.md` and the suite; nothing here is done by a session)
 
@@ -37,7 +39,7 @@ whenever a line below stops being true.
    `NEXT_PUBLIC_SITE_URL`). Then `npx supabase link --project-ref <ref>` and
    `npx supabase db push` (nine migrations; the suite is green). The free plan pauses a project
    after seven idle days; resume it in the dashboard before a push.
-2. **First sign-in**: `node scripts/dev-login-link.mjs <his e-mail>` (creates his `public.users`
+2. **First sign-in** (done on 19 Oct for `a.crypto.viking@gmail.com`; kept for a second login): `node scripts/dev-login-link.mjs <his e-mail>` (creates his `public.users`
    row on the first visit). Then in the Supabase SQL editor, in this order:
    ```sql
    update public.users set is_superadmin = true where lower(email) = lower('<his e-mail>');

@@ -13,7 +13,11 @@
 -- B1 (18 Oct 2026): the core-only suite — tenancy, entitlements, admin/audit, delete
 -- account, the feedback board. B2 (19 Oct 2026): the door (section 3b): create_venture(),
 -- the three verdicts, the caps, immutable test numbers, the killed re-score rule, the
--- owner's venture is invisible to the tester, anon reads nothing of it.
+-- owner's venture is invisible to the tester, anon reads nothing of it. B3 (19 Oct 2026):
+-- the workspace (section 3c): stages and offers of another venture are invisible, the
+-- invited person sees one venture and nothing else, the week's test moves the hours and
+-- refuses a second one, a result closes with the decided outcome, the workspace is refused
+-- on the free plan and allowed on the founder plan.
 
 \set ON_ERROR_STOP on
 \set QUIET on
@@ -53,6 +57,9 @@ select public.create_venture(
   '{"title":"Owner venture 1","customer":"c","uses_today":"u","ship_in_30_days":"s","unfair_reach":"r"}'::jsonb,
   '{"gates":[true,true,true,true,true],"scores":{"demand":2,"time":5,"price":5,"edge":5,"margin":5},"test":{"what":"t","deadline":"2026-10-26","pass_number":5,"fail_number":1}}'::jsonb
 ) as owner_venture \gset
+-- B3: the owner's venture has workspace rows too, so the tester's zero-leak scan covers them
+select public.mark_stage_step(:'owner_venture', 3::smallint, 'founder', 'the pre-sale went out');
+insert into public.offers (account_id, customer, problem, promise) values (:'owner_venture', 'c', 'p', 'the promise');
 reset role;
 
 select set_config('test.internal_account', :'internal_account', false);
@@ -447,6 +454,185 @@ begin
   insert into test_results values ('door: exactly one live venture has the hours', n = 1);
   select count(*) into n from public.venture_card where owner_user_id = current_setting('test.owner_id')::uuid and state = 'live';
   if n <> 3 then raise exception 'the owner should have three live ventures, got %', n; end if;
+end $$;
+reset role;
+
+-- ---------------------------------------------------------------------------
+-- 3c. The workspace (010, HANDOFF §8 B3). As the owner (founder plan): the stage
+--     moves when the founder's step is recorded, premature work does not move it,
+--     the week's test moves the hours and refuses a second one, a result closes
+--     with the outcome the numbers decided, one invited person. As the tester
+--     (free plan): the workspace is refused, the invitation opens exactly one
+--     venture, a parked venture's trigger firing prompts a re-score.
+-- ---------------------------------------------------------------------------
+select set_config('request.jwt.claims', json_build_object('sub', :'owner_id', 'role', 'authenticated')::text, false);
+set role authenticated;
+do $$
+declare
+  v1 uuid := current_setting('test.owner_venture')::uuid; v2 uuid; v3 uuid; n bigint; ok boolean; st smallint; r jsonb; t uuid; t2 uuid;
+  week_test constant jsonb := '{"what":"Pre-sell to ten named makers","deadline":"2026-10-26","pass_number":5,"fail_number":1}'::jsonb;
+begin
+  select account_id into v2 from public.ventures where title = 'Owner venture 2';
+  select account_id into v3 from public.ventures where title = 'Owner venture 3';
+
+  -- 1. the founder's step of stage 3 was recorded in section 0: the venture stands at 4, with its history
+  select stage into st from public.ventures where account_id = v1;
+  if st <> 4 then raise exception 'after the founder''s step of stage 3 the venture should stand at 4, got %', st; end if;
+  select count(*) into n from public.stage_history where account_id = v1;
+  if n <> 2 then raise exception 'expected 2 history rows (door: →3, user: 3→4), got %', n; end if;
+  if (select source from public.stage_history where account_id = v1 and to_stage = 3) <> 'door' then raise exception 'the first stage comes from the door'; end if;
+  insert into test_results values ('workspace: the founder''s step moves the stage, with its history', true);
+
+  -- 2. premature work: stage 6 done while 4 is not does not move the venture
+  st := public.mark_stage_step(v1, 6::smallint, 'founder', 'a page is live');
+  if st <> 4 then raise exception 'premature work must not move the stage, got %', st; end if;
+  st := public.mark_stage_step(v1, 4::smallint, 'founder', 'the buyers confirmed 149');
+  if st <> 5 then raise exception 'stage 4 done should land at 5, got %', st; end if;
+  st := public.mark_stage_step(v1, 4::smallint, 'founder', null, false);   -- undo
+  if st <> 4 then raise exception 'undoing stage 4 should land back at 4, got %', st; end if;
+  insert into test_results values ('workspace: a venture stands at the earliest stage whose founder step is not done', true);
+
+  -- 3. the state is still not editable by hand, nor the stage
+  ok := false;
+  begin
+    update public.ventures set stage = 8 where account_id = v1;
+  exception when others then ok := (sqlerrm = 'venture.use_rpc');
+  end;
+  insert into test_results values ('workspace: the stage changes only through mark_stage_step', ok);
+
+  -- 4. the week's test: venture 1 has it (and the hours); venture 2 is refused, then moved on purpose
+  ok := false;
+  begin
+    perform public.set_week_test(v2, week_test);
+  exception when others then ok := (sqlerrm = 'tests.week_taken');
+  end;
+  insert into test_results values ('workspace: a second open week test is refused', ok);
+  t := public.set_week_test(v2, week_test, v1);
+  select count(*) into n from public.venture_card where owner_user_id = current_setting('test.owner_id')::uuid and has_hours;
+  if n <> 1 then raise exception 'exactly one venture has the hours after the move, got %', n; end if;
+  if not (select has_hours from public.ventures where account_id = v2) then raise exception 'the hours should be on venture 2 now'; end if;
+  if (select has_hours from public.ventures where account_id = v1) then raise exception 'venture 1 should have lost the hours'; end if;
+  -- venture 1's test stays open, no longer the week's
+  select count(*) into n from public.tests where account_id = v1 and status = 'open' and not is_week_test;
+  if n <> 1 then raise exception 'venture 1''s test should stay open without the week, got %', n; end if;
+  insert into test_results values ('workspace: set_week_test moves the week''s test and the hours', true);
+  -- the hours need a live venture: a parked one is refused (owner has none parked; a killed one is refused the same way)
+  -- a second move onto the same venture is fine (nothing else holds the week)
+  t2 := public.set_week_test(v2, null);
+  if t2 <> t then raise exception 'set_week_test without a test should keep the open one'; end if;
+
+  -- 5. the result closes the test with the outcome the numbers decided (pass 5, fail 1 → 3 is middle)
+  r := public.record_test_result(t, 3, 'one thing: the price');
+  if r ->> 'outcome' <> 'middle' or r ->> 'prompt' <> 'rescore' or (r ->> 'trigger_fired')::boolean then
+    raise exception 'a result of 3 against 5/1 should be middle with a re-score prompt, got %', r;
+  end if;
+  if (select status from public.tests where id = t) <> 'done' then raise exception 'the test should be closed'; end if;
+  if (select state from public.ventures where account_id = v2) <> 'live' then raise exception 'a result does not move the state by itself'; end if;
+  ok := false;
+  begin
+    perform public.record_test_result(t, 9);
+  exception when others then ok := (sqlerrm = 'tests.closed');
+  end;
+  insert into test_results values ('workspace: a result closes the test with the decided outcome; a second result is refused', ok);
+  -- a pass keeps it live with no prompt
+  t := public.set_week_test(v2, week_test);
+  r := public.record_test_result(t, 7);
+  if r ->> 'outcome' <> 'pass' or (r ->> 'prompt') is not null then raise exception 'a pass needs no prompt, got %', r; end if;
+
+  -- 6. the offer: a founder-plan member writes the one-pager
+  insert into public.offers (account_id, customer, problem, promise, price_cents) values (v2, 'makers', 'fees', 'off Etsy in 30 days', 14900);
+  update public.offers set proof = 'three paid' where account_id = v2;
+  if (select proof from public.offers where account_id = v2) <> 'three paid' then raise exception 'the offer should be editable by the member'; end if;
+  insert into test_results values ('workspace: the one-pager is the member''s to write on the founder plan', true);
+
+  -- 7. invite the tester into venture 3 (founder plan: up to 3 people); the owner cannot be invited
+  perform public.invite_member(v3, current_setting('test.tester_id')::uuid, current_setting('test.tester_email'));
+  select count(*) into n from public.account_members where account_id = v3 and status = 'invited';
+  if n <> 1 then raise exception 'one invited membership expected, got %', n; end if;
+  ok := false;
+  begin
+    perform public.invite_member(v3, current_setting('test.owner_id')::uuid, 'owner@example.test');
+  exception when others then ok := (sqlerrm = 'members.is_owner');
+  end;
+  insert into test_results values ('workspace: an invitation is recorded as invited; the owner is not invitable', ok);
+  perform set_config('test.owner_v2', v2::text, false);
+  perform set_config('test.owner_v3', v3::text, false);
+end $$;
+reset role;
+
+-- as the tester: the free plan has no workspace; the invitation opens one venture and nothing else
+select set_config('request.jwt.claims', json_build_object('sub', :'tester_id', 'role', 'authenticated')::text, false);
+set role authenticated;
+do $$
+declare
+  acc1 uuid := current_setting('test.tester_v1')::uuid; acc3 uuid := current_setting('test.tester_v3')::uuid;
+  v2 uuid := current_setting('test.owner_v2')::uuid; v3 uuid := current_setting('test.owner_v3')::uuid;
+  n bigint; ok boolean; r jsonb; t uuid;
+begin
+  -- 1. the workspace is refused on the free plan: the stage, the offer, an invitation
+  ok := false;
+  begin
+    perform public.mark_stage_step(acc1, 3::smallint, 'founder', 'x');
+  exception when others then ok := (sqlerrm = 'workspace.off');
+  end;
+  insert into test_results values ('workspace: refused on the free plan (has_feature false)', ok);
+  ok := false;
+  begin
+    insert into public.offers (account_id, customer) values (acc1, 'x');
+  exception when others then ok := true;
+  end;
+  insert into test_results values ('workspace: the offer is refused on the free plan (policy)', ok);
+  ok := false;
+  begin
+    perform public.invite_member(acc1, current_setting('test.owner_id')::uuid, 'owner@example.test');
+  exception when others then ok := (sqlerrm = 'workspace.off');
+  end;
+  insert into test_results values ('workspace: no invited people on the free plan', ok);
+
+  -- 2. invited, not yet accepted: nothing of venture 3 is visible
+  select count(*) into n from public.venture_card where account_id = v3;
+  if n <> 0 then raise exception 'an invitation not yet accepted must show nothing'; end if;
+  n := public.accept_invites();
+  if n <> 1 then raise exception 'one invitation should have been accepted, got %', n; end if;
+  select count(*) into n from public.venture_card where account_id = v3;
+  if n <> 1 then raise exception 'the invited person should see venture 3'; end if;
+  select count(*) into n from public.venture_card where account_id = v2;
+  if n <> 0 then raise exception 'RLS LEAK — the invited person sees venture 2'; end if;
+  select count(*) into n from public.stage_progress where account_id in (v2, current_setting('test.owner_venture')::uuid);
+  if n <> 0 then raise exception 'RLS LEAK — the invited person sees another venture''s stages'; end if;
+  select count(*) into n from public.offers where account_id = v2;
+  if n <> 0 then raise exception 'RLS LEAK — the invited person sees another venture''s offer'; end if;
+  select count(*) into n from public.tests where account_id = v2;
+  if n <> 0 then raise exception 'RLS LEAK — the invited person sees another venture''s tests'; end if;
+  insert into test_results values ('workspace: an invited person sees that one venture and nothing else', true);
+  -- and works in it (founder plan): the stage moves
+  perform public.mark_stage_step(v3, 3::smallint, 'founder', 'as the invited person');
+  if (select stage from public.ventures where account_id = v3) <> 4 then raise exception 'the invited member should work the stages'; end if;
+  -- but cannot invite (members only; owners/admins invite)
+  ok := false;
+  begin
+    perform public.invite_member(v3, current_setting('test.tester_id')::uuid, 'x@example.test');
+  exception when insufficient_privilege then ok := true;
+  end;
+  insert into test_results values ('workspace: a member does not invite', ok);
+
+  -- 3. a parked venture whose trigger fired gets the re-score prompt (Conscious Pulse, trigger 15)
+  insert into public.tests (account_id, what, deadline, pass_number, fail_number) values (acc3, 'paid clicks', '2026-12-01', 15, 5) returning id into t;
+  r := public.record_test_result(t, 20);
+  if not (r ->> 'trigger_fired')::boolean or r ->> 'prompt' <> 'rescore' then raise exception 'the trigger fired: a re-score prompt is due, got %', r; end if;
+  insert into test_results values ('workspace: a parked venture whose trigger fired is prompted to re-score', true);
+end $$;
+reset role;
+
+-- the owner takes the tester out again; the invited person then sees nothing of venture 3
+select set_config('request.jwt.claims', json_build_object('sub', :'owner_id', 'role', 'authenticated')::text, false);
+set role authenticated;
+do $$
+declare n bigint;
+begin
+  perform public.remove_member(current_setting('test.owner_v3')::uuid, current_setting('test.tester_id')::uuid);
+  select count(*) into n from public.account_members where account_id = current_setting('test.owner_v3')::uuid and role <> 'owner';
+  insert into test_results values ('workspace: the owner removes the invited person', n = 0);
 end $$;
 reset role;
 

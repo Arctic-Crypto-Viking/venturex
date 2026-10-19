@@ -1,6 +1,6 @@
 # State — Venturex
 
-As known on 2026-10-19, 08:30 Oslo. This is the one file here that changes weekly: update it
+As known on 2026-10-19, 14:00 Oslo. This is the one file here that changes weekly: update it
 whenever a line below stops being true.
 
 ## Where it stands
@@ -8,10 +8,10 @@ whenever a line below stops being true.
 | Area | State | Source |
 |---|---|---|
 | Name | **Venturex**, at `venturex.aintegration.org` (founder, 19 Oct; HANDOFF §10 D1 decided). In `src/brand.ts`, `package.json`, the module registry (migration 009), every doc. The claude.ai project, the canvas and `docs/HANDOFF.md` keep "New Venture" as the title of a dated record. | DECISIONS.md |
-| Repo | `Arctic-Crypto-Viking/venturex`, `main`. B0, B1 (18 Oct, cloud session) and B2 (19 Oct, this Mac) pushed. | this repo |
-| Core | `core/` = git subtree of `platform-core` at branch `core/agents-module-and-admin-cut` (641f3e8, 18 Oct): `core_007` + `core_009` (admin/audit), `core_030` (agents; not applied here, B7), `core_018` (plan reads). Migrations here: 001, 003, 007, 009, 020, 024 verbatim, 007 reference data, 018 → files 001–008; plus **009 the door**. platform-core PR #1 still open. | `supabase/migrations/`, `core/` |
-| Database | No hosted project yet. Nine migrations run green on a fresh local Postgres 16 with the door fixture (20 runs, `compute_verdict()` = `src/lib/door.ts`) and the RLS suite: **45 checks** — the zero-leak scan over 17 tenant tables, the superadmin path, the feedback board, delete account, and the door's own (a GO with the hours and the test, a gate kill, Conscious Pulse at PARKED 13/25, the killed re-score rule, the saved cap, the LIVE cap, immutable test numbers, the state only through the door, decisions append-only, anon reads nothing). | `supabase/tests/local/run.sh -h localhost -p 5432 -U postgres`, 19 Oct |
-| App | `npm run build`, `npm run lint`, `npx tsc --noEmit`, `npm test` (7) green, 19 Oct. The door walked at 390 px in the Nordic look: `/door/start` → five lines → five gates → five scores (demand asks for the named person from level 3) → the verdict; the sketch's sample gives GO 18/25 "At the bar" with the test form and the card's fields. `/app`, `/app/v/[id]`, `/app/new`, View as and the admin tiles are built but not exercised against a database (none exists). | the build session |
+| Repo | `Arctic-Crypto-Viking/venturex`, `main`. B0, B1 (18 Oct, cloud session), B2 and B3 (19 Oct, this Mac) pushed. | this repo |
+| Core | `core/` = git subtree of `platform-core` at branch `core/agents-module-and-admin-cut` (641f3e8, 18 Oct): `core_007` + `core_009` (admin/audit), `core_030` (agents; not applied here, B7), `core_018` (plan reads). Migrations here: 001, 003, 007, 009, 020, 024 verbatim, 007 reference data, 018 → files 001–008; plus **009 the door** and **010 the workspace**. platform-core PR #1 still open. | `supabase/migrations/`, `core/` |
+| Database | No hosted project yet. Ten migrations run green on a fresh local Postgres 16 with the door fixture (20 runs, `compute_verdict()` = `src/lib/door.ts`) and the RLS suite: **60 checks** — the zero-leak scan over 20 tenant tables, the superadmin path, the feedback board, delete account, the door's own (B2), and the workspace's (B3): the founder's step moves the stage with its history, premature work does not, the stage only through the RPC, a second open week test refused, `set_week_test` moves the week and the hours, a result closes with the decided outcome and a second is refused, the offer on the founder plan, an invitation recorded as invited and the owner not invitable, the workspace / the offer / invitations refused on the free plan, an invited person sees that one venture and nothing else and works its stages but does not invite, a parked venture's trigger firing prompts a re-score, the owner removes the invited person. | `supabase/tests/local/run.sh -h localhost -p 5432 -U postgres`, 19 Oct |
+| App | `npm run build`, `npm run lint`, `npx tsc --noEmit`, `npm test` (7) green, 19 Oct (B3). The door walked at 390 px (B2). B3's stages and tests screens checked at 390 px from sample rows (no horizontal scroll, no console errors) — rendered through the pure views, not against a database (none exists, and no local Supabase stack: no Docker on this Mac). `/app`, `/app/v/[id]` and its six workspace screens, `/admin/ventures`, View as and the admin tiles are built but not exercised against a database. | the build session |
 | Deployment | None. The founder's steps below. | — |
 | Seller, prices | Undecided (HANDOFF §10 D2, D3). No price shown anywhere. `company` in `src/brand.ts` says "to be named". | `src/brand.ts` |
 | Project material | In the repo since 19 Oct: `docs/concept.md`, `docs/design/` (the canvas copy, the first sketch as text), `docs/research/competition-analysis/` (the 3 Oct doc, five tabs). | this repo |
@@ -53,12 +53,17 @@ whenever a line below stops being true.
 
 ## Next build steps
 
-1. **B3, the workspace** (HANDOFF §8): `stage_progress` + history, `offers`,
-   `/app/v/[id]/{stages,ledger,decisions,tests,offer,team}`, `set_week_test` (moves the hours),
-   `record_test_result` as a screen, `invite_member`, plan gating (`venture.workspace`,
-   `venture.members_max`), `/admin/ventures`, the country-rules checklist before a test.
-2. The founder reviews the Norwegian gate wording (`src/i18n/nb.ts`) before the first tester.
-3. `platform-core` PR #1 merge, then `git subtree pull` here and in artist-platform.
+1. **Exit tests 2 and 3** (HANDOFF §8 B3), the founder's: two weeks of daily use instead of
+   the cards file (states, the week's test with its number, results, decisions); one invited
+   person opens one venture on a phone from a second account and sees nothing else (the suite
+   proves the RLS half). The first real-database walk of the workspace screens happens here:
+   nothing in B3 has run against a hosted database yet.
+2. **B4, the record moves** (HANDOFF §8, §10 D9): the cards file header, each venture repo's
+   `CLAUDE.md` pointing at the product — after exit test 2.
+3. The founder reviews the Norwegian wording (`src/i18n/nb.ts`: the gates, and now the
+   workspace) before the first tester.
+4. `platform-core` PR #1 merge, then `git subtree pull` here and in artist-platform.
+5. Later than v0 (HANDOFF §5.2): `processes` (stage 8) and `/app/v/[id]/processes`.
 
 ## Not known to this repo
 
@@ -67,6 +72,13 @@ whenever a line below stops being true.
   through the door.
 
 ## Open issues
+
+- B3's invite flow creates the login (core's `createSignInLink`) before `invite_member`
+  writes the membership; a refusal in SQL after that (the plan's cap) leaves a login that is a
+  member of nothing and sees nothing. The screen checks `has_feature` first, so it only
+  happens on a cap hit. Fine for one invited person per venture.
+- B3's "set the test" without the week (a plain `tests` insert under the members policy) does
+  not start `started_at` in SQL; the action sends it. `set_week_test` sets it in SQL.
 
 - A redundant branch `core-007-admin-audit` in platform-core (superseded) could not be deleted
   through the proxy: delete it on GitHub.

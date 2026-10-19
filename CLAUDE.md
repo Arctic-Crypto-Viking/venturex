@@ -9,16 +9,22 @@ working name "New Venture"). The name is **Venturex**, everywhere, since 19 Oct 
 
 ## Status (19 Oct 2026)
 
-B0, B1 (18 Oct) and **B2, the door (19 Oct)** are built: migration 009 (`ventures`,
-`evidence`, `door_runs`, `decisions`, `tests`, the cap trigger, `compute_verdict`,
-`record_door_run`, `create_venture`, the `venture_card` view, the admin hooks), the rules as
-code in `src/lib/door.ts` (version 1) with a 20-run fixture SQL and TypeScript both pass,
-the `/door/*` screens on a cookie, My ventures at `/app`, the card at `/app/v/[id]`, the RLS
-suite at 45 checks green on a fresh Postgres, `npm test`, build and lint green, the door
-walked at 390 px (the sketch's sample gives GO 18/25). Nothing is applied to a hosted
-database and nothing is deployed: the Supabase project, the comped founder account, Vercel
-and the subdomain are the founder's steps (`STATE.md`). Next: the founder's exit test 1
-(ten of his own ideas through the door on a phone), then B3, the workspace.
+B0, B1 (18 Oct), B2, the door, and **B3, the workspace (19 Oct)** are built. B2: migration
+009 (`ventures`, `evidence`, `door_runs`, `decisions`, `tests`, the cap trigger,
+`compute_verdict`, `record_door_run`, `create_venture`, the `venture_card` view, the admin
+hooks), the rules as code in `src/lib/door.ts` (version 1) with a 20-run fixture, the
+`/door/*` screens on a cookie, `/app`, the card at `/app/v/[id]`. B3: migration 010
+(`stage_progress` + `stage_history` by trigger, `offers`, `mark_stage_step`, `set_week_test`,
+`record_test_result`, `invite_member` / `accept_invites` / `remove_member`,
+`admin_list_ventures`), the six screens `/app/v/[id]/{stages,ledger,decisions,tests,offer,team}`
+behind `venture.workspace` and `venture.members_max`, `/admin/ventures`, the country-rules
+checklist (`src/lib/test-rules.ts`). The RLS suite is at 60 checks green on a fresh Postgres;
+`npm test`, build, lint and `tsc` green; the stages and tests screens checked at 390 px
+(rendered from sample rows: no database exists to sign in against). Nothing is applied to a
+hosted database and nothing is deployed: the Supabase project, the comped founder account,
+Vercel and the subdomain are the founder's steps (`STATE.md`). Next: the founder's exit
+tests 1 (ten ideas through the door), 2 (two weeks of daily use) and 3 (one invited person);
+then B4, the record moves.
 
 ## Read first, in this order
 
@@ -48,6 +54,17 @@ and the subdomain are the founder's steps (`STATE.md`). Next: the founder's exit
 - `supabase/migrations/` (timestamped, applied with the Supabase CLI; append-only) ·
   `supabase/tests/rls_isolation.sql` + `supabase/tests/door_fixture.sql` (generated) +
   `supabase/tests/local/run.sh` (the auth shim comes with `core/`).
+- **The workspace** (B3): read side in `src/lib/workspace.ts` (types, loaders), the shared
+  loader `src/app/app/v/[id]/workspace.ts` (`loadWorkspace`: the venture through RLS, the
+  entitlements, `on` = `hasFeature('venture.workspace')`), one server action per form in
+  `src/app/app/v/[id]/actions.ts`, the forms in `forms.tsx`, the tabs in `workspace-nav.tsx`
+  (the layout). Stages and tests are loader + pure view (`stages/view.tsx`, `tests/view.tsx`).
+  The stage a venture stands at is `app.venture_stage_of()` in SQL (§4.3), moved only by
+  `mark_stage_step`; the week's test and the hours move together in `set_week_test`; a
+  result never moves the state — it returns a prompt and the door does (DECISIONS 19 Oct).
+  Country rules before a test: `src/lib/test-rules.ts` (which items), words in
+  `workspace.tests.rules`. Invitations: `invite_member` writes `account_members` as
+  `invited`, the link comes from core's `createSignInLink`, `/app` calls `accept_invites()`.
 - **The door**: rules in `src/lib/door.ts` (`DOOR_RULES_VERSION`, `computeVerdict`,
   thresholds, the demand cap) mirrored by `compute_verdict()` in SQL; the fixture
   `src/lib/door-fixture.ts` → `scripts/gen-door-fixture.ts` → `door_fixture.sql`, checked by
@@ -65,16 +82,19 @@ and the subdomain are the founder's steps (`STATE.md`). Next: the founder's exit
   `src/app/globals.css`; components in `core/src/components/ui.tsx`; the mark in
   `src/components/brand.tsx`. Pages compose these; no raw palette classes.
 - Entitlements: `core/src/lib/entitlements.ts`; what a customer may be told is in
-  `src/lib/plan-summary.ts` (`LIVE_FEATURES`: `venture.ventures_max` since B2).
+  `src/lib/plan-summary.ts` (`LIVE_FEATURES`: `venture.ventures_max` since B2,
+  `venture.workspace` and `venture.members_max` since B3).
 
 ## Commands
 
 ```bash
 npm run dev            # http://localhost:3000 (needs .env.local — see .env.example; the anonymous door runs without a database)
+                       # the app's browser pane: .claude/launch.json entry "venturex", port 3002
 npm run build && npm run lint
 npm test               # the door's rules + the SQL fixture is in step (node:test via tsx)
 npx tsx scripts/gen-door-fixture.ts                           # after a change to src/lib/door-fixture.ts
-supabase/tests/local/run.sh -h <host> -p <port> -U postgres   # fresh DB → migrations → door fixture → RLS suite (45)
+supabase/tests/local/run.sh -h <host> -p <port> -U postgres   # fresh DB → migrations → door fixture → RLS suite (60)
+npx next typegen       # after a new route: PageProps<"/…"> is generated
 npx supabase db push   # founder, last step, after the suite is green
 node scripts/dev-login-link.mjs you@example.com                # a sign-in link without e-mail
 ```
@@ -117,7 +137,11 @@ node scripts/dev-login-link.mjs you@example.com                # a sign-in link 
     carries its disclosure and `/privacy` names the provider first.
 15. **"Atlas"** never appears in anything a tester or customer can see.
 16. **The state, the hours, the stage, the trigger and the latest run change only through
-    the RPCs** (`set_venture_state`, `record_door_run`); the column guard refuses the rest.
+    the RPCs** (`set_venture_state`, `record_door_run`, `mark_stage_step`, `set_week_test`);
+    the column guard refuses the rest. A test result never moves the state: it prompts a
+    re-score and the door decides (rule 10).
+17. **The workspace is plan data**: `stage_progress`, `offers` and invitations are refused in
+    SQL without `venture.workspace` (`app.workspace_on`); the screens only hide.
 
 ## How the founder works (apply to every task)
 
@@ -135,9 +159,9 @@ node scripts/dev-login-link.mjs you@example.com                # a sign-in link 
 |---|---|---|
 | B0 | repo, `CLAUDE.md`, `STATE.md`, `DECISIONS.md`, `docs/HANDOFF.md`, `assumptions.md`, `later.md` | built 18 Oct |
 | B1 | shell on the core; core SQL 001/003/007/009/020/024/018 + reference data; RLS suite | built 18 Oct |
-| B2 | the door: migration 009, `src/lib/door.ts` + fixture, `/door/*`, `/app`, `/app/v/[id]`, the suite's product checks | **built 19 Oct** · founder's hosted steps and exit test 1 pending |
-| B3 | the workspace: stages, ledger, decisions, tests, offer, team; `set_week_test`; `/admin/ventures` | next |
-| B4 | the record moves to the product | |
+| B2 | the door: migration 009, `src/lib/door.ts` + fixture, `/door/*`, `/app`, `/app/v/[id]`, the suite's product checks | built 19 Oct · founder's hosted steps and exit test 1 pending |
+| B3 | the workspace: migration 010, stages, ledger, decisions, tests, offer, team; `set_week_test`, `record_test_result`, `invite_member`; `/admin/ventures`; the suite at 60 | **built 19 Oct** · exit tests 2 and 3 pending |
+| B4 | the record moves to the product | next, after exit test 2 |
 | B5 | forecast log + Monday review mail (Resend) | |
 | B6 | a second founder (invite a tester) | |
 | B7 | AI inside, when the core engine exists | |

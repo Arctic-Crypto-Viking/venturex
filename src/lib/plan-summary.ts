@@ -13,7 +13,9 @@ import { en, type Dict } from "@/i18n/en";
  */
 export const LIVE_FEATURES: ReadonlySet<FeatureKey> = new Set<FeatureKey>([
   "venture.ventures_max", // B2 (19 Oct 2026): the door saves ventures, the home page shows "n of m saved"
-  // B3 adds "venture.workspace", "venture.members_max"; B5 "venture.weekly_review", "venture.forecast_public".
+  "venture.workspace",    // B3 (19 Oct 2026): stages, ledger, decisions, tests, offer under /app/v/[id]
+  "venture.members_max",  // B3 (19 Oct 2026): invite one person per venture (/app/v/[id]/team)
+  // B5 adds "venture.weekly_review", "venture.forecast_public".
 ]);
 
 export function isLiveFeature(key: FeatureKey): boolean {

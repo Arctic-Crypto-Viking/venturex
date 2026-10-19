@@ -14,6 +14,8 @@ export default async function AppHome() {
   const user = await getCurrentUser();
   if (!user) redirect("/login?next=/app");
   const supabase = await createClient();
+  // an invited person's first visit makes the membership active (migration 010); until then they see nothing
+  await supabase.rpc("accept_invites");
   const [ventures, t, locale, account] = await Promise.all([loadMyVentures(supabase), getDict(), getLocale(), getCurrentAccount()]);
   const cap = capOf(ventures, user.id);
   // the saved-ventures limit comes from the owner's newest account's plan (create_venture carries it over)

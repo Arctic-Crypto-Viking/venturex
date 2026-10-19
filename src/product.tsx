@@ -16,11 +16,13 @@ export const product: ProductConfig = {
   signIn: { label: "Beta" },
   privatePrefixes: ["/app"],
   admin: {
+    nav: [["/admin/ventures", "Ventures"]],
     searchPlaceholder: "Name, e-mail or venture",
     accountTitle: (r) => (typeof r.venture_title === "string" && r.venture_title ? r.venture_title : null),
     overviewTiles: (o) => [
       ["Ventures live", Number(o.ventures_live ?? 0)],
       ["Ventures parked", Number(o.ventures_parked ?? 0)],
+      ["Stalled · 4+ weeks", Number(o.ventures_stalled ?? 0)],
       ["Verdicts · 7d", Number(o.verdicts_7d ?? 0)],
       ["Tests due this week", Number(o.tests_due_7d ?? 0)],
     ],

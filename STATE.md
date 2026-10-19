@@ -16,16 +16,19 @@ whenever a line below stops being true.
 | Seller, prices | Undecided (HANDOFF §10 D2, D3). No price shown anywhere. `company` in `src/brand.ts` says "to be named". | `src/brand.ts` |
 | Project material | In the repo since 19 Oct: `docs/concept.md`, `docs/design/` (the canvas copy, the first sketch as text), `docs/research/competition-analysis/` (the 3 Oct doc, five tabs). | this repo |
 
-## Blocked on 19 Oct 2026: the hosted setup
+## Hosted on 19 Oct 2026 (configured by the build session with the founder signed in)
 
-The Supabase organization "pasai Ventures" (`ljdaqizgdrmojbbiymby`) is on the **Free plan, which allows
-two active projects**, and both are in use: `artist-platform` (xklhgcnzbtcilgnljbvu) and `investx`
-(xbwdihlpriukmidwmqqz), both eu-central-1. A `supabase projects create venturex` on 19 Oct was refused
-on that basis. The founder's options: upgrade the organization to Pro (a payment, Supabase's own
-dashboard → Organization → Billing), or pause the `investx` project until it is needed (it is not
-deployed either), which frees a slot. The Supabase CLI on this Mac is signed in; the Vercel CLI is
-not (`npx vercel login`), and the GitHub CLI is. A database password for the new project was
-generated and kept outside the repo (the session's scratchpad), to be regenerated if lost.
+| Thing | Value |
+|---|---|
+| Supabase organization | pasai Ventures (`ljdaqizgdrmojbbiymby`), upgraded to Pro by the founder on 19 Oct (the Free plan allows two projects; artist-platform and investx had them) |
+| Supabase project | `venturex`, ref `rvltvptvdffmstenqbhl`, eu-central-1, created 19 Oct 11:10 UTC with the CLI; the database password is in `.env.local` on the founder's Mac (`SUPABASE_DB_PASSWORD`), nowhere else |
+| Migrations | all ten applied with `npx supabase db push` on 19 Oct (001–008 core, 009 the door, 010 the workspace) |
+| Supabase Auth | Site URL `https://venturex.aintegration.org`; redirect URL `https://venturex.aintegration.org/**` (add `http://localhost:3002/**` for local sign-in against the hosted project when needed) |
+| Vercel | project `venturex` (`prj_3pwS71sk8x5ZOzMeZ9m4ZRyxoeGA`, team acv20 / arctic-crypto-viking), region `fra1`; variables `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY` on Production and Preview; first production deploy from the CLI 19 Oct → `https://venturex-beta.vercel.app` (serves the landing page) |
+| Vercel ↔ GitHub | **not connected**: `vercel git connect` was refused (the Vercel GitHub app has no access to `Arctic-Crypto-Viking/venturex`); until the founder grants it in Vercel → Settings → Git, deploys are `npx vercel deploy --prod` from the Mac |
+| Domain | `venturex.aintegration.org` assigned to the Vercel project; DNS at Domeneshop (zone `aintegration.org`, nameservers hyp.net): `CNAME venturex → cname.vercel-dns.com`, TTL 1 h, added 19 Oct |
+| Repo visibility | `Arctic-Crypto-Viking/venturex` is **public** (created so on 18 Oct); HANDOFF §8 B0 asked for private. No secrets are in it. The founder decides |
+| Not done | the founder's first sign-in, the superadmin flag and the comped founder plan (below); Resend / `ANTHROPIC_API_KEY` (optional) |
 
 ## The founder's steps (verified against `core/README.md` and the suite; nothing here is done by a session)
 

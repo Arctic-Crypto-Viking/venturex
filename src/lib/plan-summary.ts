@@ -12,8 +12,8 @@ import { en, type Dict } from "@/i18n/en";
  * that ships the feature, never before (HANDOFF §5.4 says which step adds which).
  */
 export const LIVE_FEATURES: ReadonlySet<FeatureKey> = new Set<FeatureKey>([
-  // B2 adds "venture.ventures_max"; B3 "venture.workspace", "venture.members_max";
-  // B5 "venture.weekly_review", "venture.forecast_public".
+  "venture.ventures_max", // B2 (19 Oct 2026): the door saves ventures, the home page shows "n of m saved"
+  // B3 adds "venture.workspace", "venture.members_max"; B5 "venture.weekly_review", "venture.forecast_public".
 ]);
 
 export function isLiveFeature(key: FeatureKey): boolean {

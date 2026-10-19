@@ -13,3 +13,9 @@ Add freely; removing a line needs a reason (minimum-sellable-product skill, "sco
 - Languages beyond English and Norwegian with real translations (HANDOFF §10 D10).
 - Shared sign-in across products (HANDOFF §10 D6).
 - "The platform develops it" as per-venture automations — not before two weeks of the founder's daily use.
+- Moving the hours between live ventures (`set_week_test`, B3); until then the first live venture keeps them.
+- Country rules per test as a static checklist before a test starts (`src/lib/test-rules.ts`, HANDOFF §4.4) — with B3's test screens.
+- A fourth GO asking which LIVE venture leaves (HANDOFF §10 D8): the door refuses it with the cap message for now.
+- `/admin/ventures` (every venture across accounts, stalled first) — B3.
+- Re-scoring a LIVE venture keeps its stage; a stage change comes with B3's stages screen.
+

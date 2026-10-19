@@ -24,6 +24,9 @@ done
 # before the migrations run, exactly as Supabase does, so a migration's own
 # revokes survive as they do in prod.
 
+echo "→ door rules fixture (compute_verdict vs src/lib/door.ts)"
+"${PSQL[@]}" -f supabase/tests/door_fixture.sql
+
 echo "→ test users (no seed: this product writes no person's name and no venture by default)"
 "${PSQL[@]}" -c "insert into auth.users (email, raw_user_meta_data) values ('owner@example.test', '{}'), ('tester@example.test', '{}') on conflict do nothing;"
 

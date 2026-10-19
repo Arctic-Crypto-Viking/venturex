@@ -150,7 +150,7 @@ export default async function PrivacyPage() {
                 ["ap_theme", "Dark or Bright, as you chose. One year."],
                 ["ap_template", "The look you picked. One year."],
                 ["ap_lang", "The language you picked. One year."],
-                ["nv_door", "Your answers at the door before you save them. One day, and removed when you save."],
+                ["vx_door", "Your answers at the door before you save them. One day, and removed when you save."],
                 ["sb-…-auth-token", "Keeps you signed in (sometimes split into numbered pieces). Removed when you sign out."],
                 ["sb-…-code-verifier", "Used for a moment while you sign in, then removed."],
               ]}

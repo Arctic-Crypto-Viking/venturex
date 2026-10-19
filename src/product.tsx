@@ -5,7 +5,7 @@ import { AccountPanel } from "@/app/admin/_product/account-panel";
 import { ViewAs } from "@/app/admin/_product/view-as";
 
 /**
- * What platform core needs from New Venture (contract: core/src/product.ts).
+ * What platform core needs from Venturex (contract: core/src/product.ts).
  * Everything product-specific that core shows lives here or behind these imports.
  */
 export const product: ProductConfig = {

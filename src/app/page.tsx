@@ -14,11 +14,11 @@ import { getDict, type Dict } from "@/i18n";
  * week whether your idea deserves your next 30 days"), one door ("Run the five
  * gates — free"), the three states, and what happens after a GO. Built only
  * from tokens, so it follows every look and both themes. No price anywhere
- * (HANDOFF §10 D3); nothing shown as live that does not exist: until B2 the
- * door button leads to sign-in, and the home page says the door is next.
+ * (HANDOFF §10 D3). The door button starts a fresh anonymous run (/door/start);
+ * nothing is saved until the person asks for a verdict and signs in.
  */
 
-const DOOR = "/login?next=/app";
+const DOOR = "/door/start";
 const SIGNIN = "/login";
 
 export async function generateMetadata(): Promise<Metadata> {

@@ -11,8 +11,9 @@
 -- Every check raises on failure; a clean run ends with "RLS suite: all checks passed".
 --
 -- B1 (18 Oct 2026): the core-only suite — tenancy, entitlements, admin/audit, delete
--- account, the feedback board. B2 adds the product checks (HANDOFF §8 B2) and replaces
--- the direct account inserts below with create_venture().
+-- account, the feedback board. B2 (19 Oct 2026): the door (section 3b): create_venture(),
+-- the three verdicts, the caps, immutable test numbers, the killed re-score rule, the
+-- owner's venture is invisible to the tester, anon reads nothing of it.
 
 \set ON_ERROR_STOP on
 \set QUIET on
@@ -32,6 +33,11 @@ on conflict (slug) do nothing;
 select id as internal_account from public.accounts where slug = 'internal' \gset
 insert into public.account_members (account_id, user_id, role, status, accepted_at)
 values (:'internal_account', :'owner_id', 'owner', 'active', now()) on conflict do nothing;
+-- the founder's account is comped on the founder plan (HANDOFF §9 step 3; Mainfloor's seed does the same):
+-- without a live subscription the effective plan is the free plan (core_003)
+insert into public.subscriptions (account_id, plan_id, term_months, status, provider, notes)
+select :'internal_account', p.id, 12, 'comped', 'manual', 'Founder account — comped' from public.plans p where p.key = 'founder'
+on conflict do nothing;
 
 insert into public.accounts (name, slug, owner_user_id, plan_id)
 select 'Tester venture', 'tester-venture', :'tester_id', p.id from public.plans p where p.is_default_for_signup
@@ -40,7 +46,17 @@ select id as tester_account from public.accounts where slug = 'tester-venture' \
 insert into public.account_members (account_id, user_id, role, status, accepted_at)
 values (:'tester_account', :'tester_id', 'owner', 'active', now()) on conflict do nothing;
 
+-- the owner's first venture, through the door as the founder would: a GO with the hours
+select set_config('request.jwt.claims', json_build_object('sub', :'owner_id', 'role', 'authenticated')::text, false);
+set role authenticated;
+select public.create_venture(
+  '{"title":"Owner venture 1","customer":"c","uses_today":"u","ship_in_30_days":"s","unfair_reach":"r"}'::jsonb,
+  '{"gates":[true,true,true,true,true],"scores":{"demand":2,"time":5,"price":5,"edge":5,"margin":5},"test":{"what":"t","deadline":"2026-10-26","pass_number":5,"fail_number":1}}'::jsonb
+) as owner_venture \gset
+reset role;
+
 select set_config('test.internal_account', :'internal_account', false);
+select set_config('test.owner_venture', :'owner_venture', false);
 select set_config('test.tester_account', :'tester_account', false);
 select set_config('test.owner_id', :'owner_id', false);
 select set_config('test.tester_id', :'tester_id', false);
@@ -48,7 +64,7 @@ select set_config('test.tester_email', lower(:'tester_email'), false);
 select set_config('test.started', now()::text, false);   -- audit rows this run writes are newer
 
 create temp table test_results (name text, ok boolean);
-grant insert on test_results to anon, authenticated;
+grant insert on test_results to anon, authenticated, service_role;
 
 -- ---------------------------------------------------------------------------
 -- 1. The tester, as `authenticated`: zero internal rows in every table that
@@ -64,13 +80,13 @@ begin
             join information_schema.tables t on t.table_schema = c.table_schema and t.table_name = c.table_name
            where c.table_schema = 'public' and c.column_name = 'account_id' and t.table_type = 'BASE TABLE'
            order by 1 loop
-    execute format('select count(*) from public.%I where account_id = $1', r.table_name)
-       into n using current_setting('test.internal_account')::uuid;
+    execute format('select count(*) from public.%I where account_id in ($1, $2)', r.table_name)
+       into n using current_setting('test.internal_account')::uuid, current_setting('test.owner_venture')::uuid;
     checked := checked + 1;
     if n > 0 then leaks := leaks || (r.table_name || '=' || n); end if;
   end loop;
   if cardinality(leaks) > 0 then
-    raise exception 'RLS LEAK — tester can see internal rows in: %', leaks;
+    raise exception 'RLS LEAK — tester can see the owner''s rows in: %', leaks;
   end if;
   raise notice 'tenant tables checked: % (all zero)', checked;
 end $$;
@@ -279,6 +295,180 @@ end $$;
 reset role;
 
 -- ---------------------------------------------------------------------------
+-- 3b. The door (009, HANDOFF §8 B2): as the tester — create_venture() with a GO,
+--     a gate kill and Conscious Pulse at PARKED 13; the killed re-score rule; the
+--     saved cap of the free plan; a GO needs its test; immutable test numbers;
+--     the state only through the door; decisions append-only; nothing of the
+--     owner's venture. Then as the owner: the LIVE cap at three, one has the hours.
+-- ---------------------------------------------------------------------------
+select set_config('request.jwt.claims', json_build_object('sub', :'tester_id', 'role', 'authenticated')::text, false);
+set role authenticated;
+do $$
+declare
+  acc1 uuid; acc2 uuid; acc3 uuid; n bigint; ok boolean; v record; t record;
+  go_run constant jsonb := '{"gates":[true,true,true,true,true],"gate_notes":["ten names","etsy fees","a download","digital","yes"],
+     "scores":{"demand":3,"time":4,"price":3,"edge":3,"margin":5},
+     "demand_evidence":{"claim":"Maria K. asked what it would cost","source":"DM","source_date":"2026-10-12"},
+     "test":{"what":"Pre-sell at 149","deadline":"2026-10-26","pass_number":5,"fail_number":1,"cost_cents":0},
+     "card":{"assets":"2,100 followers","unblocker":"five pre-orders"}}'::jsonb;
+begin
+  -- 1. a GO: the account, the membership, the venture live with the hours, this week's test, the ledger
+  acc1 := public.create_venture('{"title":"Off-Etsy kit for makers","customer":"Makers on Etsy","uses_today":"YouTube tutorials","ship_in_30_days":"The template","unfair_reach":"2,100 followers"}'::jsonb, go_run);
+  select * into v from public.venture_card where account_id = acc1;
+  if v.state <> 'live' or v.verdict <> 'go' or v.total <> 18 or not v.has_hours or v.stage <> 3 or v.state_basis <> 'scored' then
+    raise exception 'GO venture wrong: state % verdict % total % hours % stage %', v.state, v.verdict, v.total, v.has_hours, v.stage;
+  end if;
+  if v.test_what is null or v.test_pass <> 5 or v.test_fail <> 1 or not v.is_week_test or v.unblocker <> 'five pre-orders' then
+    raise exception 'a GO must carry this week''s test and the card''s fields';
+  end if;
+  select count(*) into n from public.evidence where account_id = acc1;
+  if n <> 2 then raise exception 'expected 2 evidence rows (the demand evidence, line 3), got %', n; end if;
+  select count(*) into n from public.door_runs where account_id = acc1;
+  if n <> 1 then raise exception 'expected 1 run, got %', n; end if;
+  insert into test_results values ('door: a GO saves the venture live, with the hours, the test and the ledger', true);
+
+  -- 2. a No at gate 2: no scores, no test, KILLED with the gate on record
+  acc2 := public.create_venture('{"title":"Uber for beekeepers","customer":"Beekeepers","uses_today":"nothing","ship_in_30_days":"an app","unfair_reach":"none"}'::jsonb,
+          '{"gates":[true,false],"gate_notes":["","nobody pays for this"]}'::jsonb);
+  select * into v from public.venture_card where account_id = acc2;
+  if v.state <> 'killed' or v.killed_at_gate <> 2 or v.total is not null or v.has_hours or v.state_reason not like 'Killed at gate 2%' then
+    raise exception 'gate kill wrong: % % % %', v.state, v.killed_at_gate, v.total, v.state_reason;
+  end if;
+  insert into test_results values ('door: a No at gate 2 kills, with the gate and the line on record', true);
+
+  -- 3. a killed venture is re-scored only with a changed fact; a re-score is a new run
+  ok := false;
+  begin
+    perform public.record_door_run(acc2, go_run);
+  exception when others then ok := (sqlerrm = 'door.killed_needs_fact');
+  end;
+  insert into test_results values ('door: a killed venture refuses a re-score without a changed fact', ok);
+  perform public.record_door_run(acc2, go_run || '{"fact_changed":"Three beekeepers paid a deposit on 15 Oct (invoices)"}'::jsonb);
+  select * into v from public.venture_card where account_id = acc2;
+  if v.state <> 'live' or v.fact_changed is null then raise exception 're-score with a changed fact should go live, got %', v.state; end if;
+  if v.has_hours then raise exception 'the hours stay on the first live venture'; end if;
+  select count(*) into n from public.door_runs where account_id = acc2;
+  if n <> 2 then raise exception 'a re-score is a new run, got % rows', n; end if;
+  insert into test_results values ('door: a re-score with a changed fact is a new run, never an edit', true);
+
+  -- 4. Conscious Pulse (13 Oct answers) reproduces PARKED 13/25; its trigger is required and "when I have time" is refused
+  ok := false;
+  begin
+    perform public.create_venture('{"title":"Conscious Pulse","customer":"x","uses_today":"y","ship_in_30_days":"z","unfair_reach":"w"}'::jsonb,
+      '{"gates":[true,true,true,true,true],"scores":{"demand":2,"time":4,"price":3,"edge":2,"margin":2},"revival":{"trigger":"when I have time","number":5,"deadline":"2026-12-01"}}'::jsonb);
+  exception when others then ok := (sqlerrm = 'door.parked_needs_trigger');
+  end;
+  insert into test_results values ('door: parked refuses "when I have time" as a trigger', ok);
+  acc3 := public.create_venture('{"title":"Conscious Pulse","customer":"x","uses_today":"y","ship_in_30_days":"z","unfair_reach":"w"}'::jsonb,
+      '{"gates":[true,true,true,true,true],"scores":{"demand":2,"time":4,"price":3,"edge":2,"margin":2},"revival":{"trigger":"15 orders from strangers on 1,000 paid clicks","number":15,"deadline":"2026-12-01"}}'::jsonb);
+  select * into v from public.venture_card where account_id = acc3;
+  if v.state <> 'parked' or v.total <> 13 or v.revival_number <> 15 or v.has_hours then
+    raise exception 'Conscious Pulse must be PARKED 13/25 with its trigger, got % %', v.state, v.total;
+  end if;
+  insert into test_results values ('door: Conscious Pulse reproduces PARKED 13/25 with its trigger', true);
+
+  -- 5. the free plan saves three ventures; a fourth is refused
+  ok := false;
+  begin
+    perform public.create_venture('{"title":"A fourth","customer":"x","uses_today":"y","ship_in_30_days":"z","unfair_reach":"w"}'::jsonb, '{"gates":[false]}'::jsonb);
+  exception when others then ok := (sqlerrm = 'venture.saved_cap');
+  end;
+  insert into test_results values ('door: a fourth saved venture is refused on the free plan', ok);
+
+  -- 6. a GO is saved only with this week's test
+  ok := false;
+  begin
+    perform public.record_door_run(acc3, '{"gates":[true,true,true,true,true],"scores":{"demand":5,"time":5,"price":5,"edge":5,"margin":5},"demand_evidence":{"claim":"paid"}}'::jsonb);
+  exception when others then ok := (sqlerrm = 'door.go_needs_test');
+  end;
+  insert into test_results values ('door: a GO is saved only with this week''s test', ok);
+
+  -- 7. a test's numbers are immutable after set_at; a result closes it with the outcome decided in advance
+  select * into t from public.tests where account_id = acc1 and status = 'open';
+  ok := false;
+  begin
+    update public.tests set pass_number = 1 where id = t.id;
+  exception when others then ok := (sqlerrm = 'tests.immutable');
+  end;
+  insert into test_results values ('door: a test''s numbers cannot change after they are set', ok);
+  update public.tests set result_number = 7 where id = t.id;
+  select * into t from public.tests where id = t.id;
+  if t.status <> 'done' or t.outcome <> 'pass' then
+    raise exception 'a result of 7 against pass 5 should close the test as a pass, got % %', t.status, t.outcome;
+  end if;
+  insert into test_results values ('door: a result closes the test with the outcome the numbers decided', true);
+
+  -- 8. the state is not editable by hand; the card's fields are
+  ok := false;
+  begin
+    update public.ventures set state = 'live' where account_id = acc3;
+  exception when others then ok := (sqlerrm = 'venture.use_rpc');
+  end;
+  insert into test_results values ('door: the state changes only through the door', ok);
+  update public.ventures set unblocker = 'a kitchen partner' where account_id = acc3;
+  insert into test_results values ('door: the card''s fields are the member''s to edit',
+    (select unblocker = 'a kitchen partner' from public.ventures where account_id = acc3));
+
+  -- 9. decisions are append-only: an update changes nothing (no policy)
+  insert into public.decisions (account_id, decision, reason) values (acc1, 'Pre-sell before building', 'money beats opinion');
+  update public.decisions set decision = 'edited' where account_id = acc1;
+  select count(*) into n from public.decisions where account_id = acc1 and decision = 'edited';
+  insert into test_results values ('door: decisions are append-only', n = 0);
+
+  -- 10. the tester sees nothing of the owner's venture through the view either
+  select count(*) into n from public.venture_card where account_id = current_setting('test.owner_venture')::uuid;
+  insert into test_results values ('door: a member of one venture reads nothing of another', n = 0);
+  -- section 7 deletes these before the tester's last account, so the login goes with it
+  perform set_config('test.tester_v1', acc1::text, false);
+  perform set_config('test.tester_v2', acc2::text, false);
+  perform set_config('test.tester_v3', acc3::text, false);
+  -- the admin hooks carry the product's keys, computed from the tables (the tester cannot call them; checked as service below)
+end $$;
+reset role;
+
+-- the owner (founder plan, unlimited saved ventures): LIVE is capped at three, one of them has the hours
+select set_config('request.jwt.claims', json_build_object('sub', :'owner_id', 'role', 'authenticated')::text, false);
+set role authenticated;
+do $$
+declare i int; ok boolean; acc uuid; n bigint;
+  go_run constant jsonb := '{"gates":[true,true,true,true,true],"scores":{"demand":2,"time":5,"price":5,"edge":5,"margin":5},
+     "test":{"what":"t","deadline":"2026-10-26","pass_number":5,"fail_number":1}}'::jsonb;
+begin
+  for i in 2..3 loop
+    acc := public.create_venture(jsonb_build_object('title', 'Owner venture ' || i, 'customer', 'c', 'uses_today', 'u', 'ship_in_30_days', 's', 'unfair_reach', 'r'), go_run);
+  end loop;
+  ok := false;
+  begin
+    perform public.create_venture('{"title":"Owner venture 4","customer":"c","uses_today":"u","ship_in_30_days":"s","unfair_reach":"r"}'::jsonb, go_run);
+  exception when others then ok := (sqlerrm = 'venture.live_cap');
+  end;
+  insert into test_results values ('door: a fourth LIVE venture is refused (the cap is three)', ok);
+  select count(*) into n from public.venture_card where owner_user_id = current_setting('test.owner_id')::uuid and has_hours;
+  insert into test_results values ('door: exactly one live venture has the hours', n = 1);
+  select count(*) into n from public.venture_card where owner_user_id = current_setting('test.owner_id')::uuid and state = 'live';
+  if n <> 3 then raise exception 'the owner should have three live ventures, got %', n; end if;
+end $$;
+reset role;
+
+-- the hooks, as the service role: the overview counts and the account's venture keys
+set role service_role;
+do $$
+declare o jsonb; x jsonb;
+begin
+  o := app.overview_extra();
+  if (o ->> 'ventures_live')::int <> 5 or (o ->> 'ventures_parked')::int <> 1 or (o ->> 'ventures_killed')::int <> 0 then
+    raise exception 'overview_extra wrong: %', o;
+  end if;
+  if (o ->> 'verdicts_7d')::int < 7 then raise exception 'verdicts_7d should count every run today, got %', o ->> 'verdicts_7d'; end if;
+  x := app.admin_account_extra(current_setting('test.owner_venture')::uuid);
+  if x ->> 'venture_title' <> 'Owner venture 1' or x -> 'venture' ->> 'state' <> 'live' or (x -> 'venture' ->> 'score')::int <> 22 then
+    raise exception 'admin_account_extra wrong: %', x;
+  end if;
+  insert into test_results values ('door: the admin hooks read the ventures', true);
+end $$;
+reset role;
+
+-- ---------------------------------------------------------------------------
 -- 4. Anonymous: nothing of the tenant tables, the registry only
 -- ---------------------------------------------------------------------------
 select set_config('request.jwt.claims', '{"role":"anon"}', false);
@@ -292,6 +482,24 @@ begin
   if n <> 0 then raise exception 'RLS LEAK — anon can see users'; end if;
   select count(*) into n from public.plans where is_public;
   if n < 1 then raise exception 'anon should read the public plans (the landing page)'; end if;
+  select count(*) into n from public.ventures;
+  if n <> 0 then raise exception 'RLS LEAK — anon can see ventures'; end if;
+  select count(*) into n from public.door_runs;
+  if n <> 0 then raise exception 'RLS LEAK — anon can see door runs'; end if;
+  select count(*) into n from public.tests;
+  if n <> 0 then raise exception 'RLS LEAK — anon can see tests'; end if;
+  ok := false;
+  begin
+    perform count(*) from public.venture_card;
+  exception when insufficient_privilege then ok := true;
+  end;
+  insert into test_results values ('anon cannot read venture cards', ok);
+  ok := false;
+  begin
+    perform public.create_venture('{"title":"x"}'::jsonb, '{"gates":[false]}'::jsonb);
+  exception when others then ok := true;
+  end;
+  insert into test_results values ('anon cannot create a venture', ok);
   ok := false;
   begin
     perform public.is_entitled(current_setting('test.tester_account')::uuid);
@@ -320,7 +528,7 @@ begin
   select count(*) into n from public.admin_list_accounts();
   if n < 2 then raise exception 'superadmin should list every account (got %)', n; end if;
   select count(*) into n from public.admin_list_accounts(current_setting('test.tester_email'));
-  if n <> 1 then raise exception 'account search should find the tester by e-mail (got %)', n; end if;
+  if n < 1 then raise exception 'account search should find the tester by e-mail (got %)', n; end if;
   select count(*) into n from public.admin_list_accounts('no-such-venture-anywhere');
   if n <> 0 then raise exception 'account search must not match everything (got %)', n; end if;
 
@@ -432,6 +640,10 @@ begin
   end;
   insert into test_results values ('delete: refuses a wrong confirmation', ok);
 
+  -- the tester's three ventures go first (row by row, through the cascade), then the last account takes the login with it
+  perform public.admin_delete_account(current_setting('test.tester_v1')::uuid, 'off-etsy-kit-for-makers', 'RLS suite: the tester asked');
+  perform public.admin_delete_account(current_setting('test.tester_v2')::uuid, 'uber-for-beekeepers', 'RLS suite: the tester asked');
+  perform public.admin_delete_account(current_setting('test.tester_v3')::uuid, 'conscious-pulse', 'RLS suite: the tester asked');
   r := public.admin_delete_account(tester_acc, 'tester-venture', 'RLS suite: the tester asked');
   select count(*) into n from public.accounts where id = tester_acc;
   if n <> 0 then raise exception 'the account should be gone'; end if;

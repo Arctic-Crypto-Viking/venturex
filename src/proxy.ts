@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { publicEnv } from "@core/lib/env";
+import { clientHeaders } from "@core/lib/supabase/client-headers";
 
 /**
  * The request gate every product uses. Its `src/proxy.ts` is two lines:
@@ -26,6 +27,8 @@ export function createProxy(privatePrefixes: string[]) {
     }
 
     const supabase = createServerClient(publicEnv.supabaseUrl, publicEnv.supabaseAnonKey, {
+      // a refresh records the browser's device and IP on the session, not the server's
+      global: { headers: clientHeaders(request.headers) },
       cookies: {
         getAll() {
           return request.cookies.getAll();

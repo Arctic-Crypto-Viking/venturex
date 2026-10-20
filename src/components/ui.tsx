@@ -69,22 +69,28 @@ export function Section({ title, action, children, className }: { title: string;
   );
 }
 
-export function PageHeader({ eyebrow, title, subtitle, action }: { eyebrow?: ReactNode; title: ReactNode; subtitle?: ReactNode; action?: ReactNode }) {
+/** `icon`: a tile (the product's IconTile or any 44px element) shown left of the words, so every section has a face. */
+export function PageHeader({ eyebrow, title, subtitle, action, icon }: { eyebrow?: ReactNode; title: ReactNode; subtitle?: ReactNode; action?: ReactNode; icon?: ReactNode }) {
   return (
     <header className="flex flex-wrap items-start justify-between gap-3">
-      <div className="min-w-0">
-        {eyebrow ? <p className="text-xs font-medium uppercase tracking-[0.14em] text-faint">{eyebrow}</p> : null}
-        <h1 className="mt-1 text-2xl font-semibold leading-tight text-fg sm:text-3xl">{title}</h1>
-        {subtitle ? <div className="mt-1.5 text-[15px] text-muted">{subtitle}</div> : null}
+      <div className="flex min-w-0 items-start gap-3.5">
+        {icon ? <div className="mt-0.5 shrink-0">{icon}</div> : null}
+        <div className="min-w-0">
+          {eyebrow ? <p className="text-xs font-medium uppercase tracking-[0.14em] text-faint">{eyebrow}</p> : null}
+          <h1 className="mt-1 text-2xl font-semibold leading-tight text-fg sm:text-3xl">{title}</h1>
+          {subtitle ? <div className="mt-1.5 text-[15px] text-muted">{subtitle}</div> : null}
+        </div>
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
     </header>
   );
 }
 
-export function EmptyState({ title, hint, action }: { title: string; hint?: string; action?: ReactNode }) {
+/** `art`: an illustration above the words (the product's EmptyArt, or anything small). */
+export function EmptyState({ title, hint, action, art }: { title: string; hint?: string; action?: ReactNode; art?: ReactNode }) {
   return (
     <div className="rounded-2xl border border-dashed border-border-strong px-4 py-8 text-center">
+      {art ? <div className="mb-4 flex justify-center">{art}</div> : null}
       <p className="text-[15px] font-medium text-fg">{title}</p>
       {hint ? <p className="mt-1 text-sm text-muted">{hint}</p> : null}
       {action ? <div className="mt-4 flex justify-center">{action}</div> : null}
@@ -116,9 +122,22 @@ export function Notice({ tone = "warn", children }: { tone?: "warn" | "danger" |
 // ------------------------------------------------------------------ forms
 
 export const inputCls =
-  "w-full rounded-xl border border-border bg-surface px-4 text-fg placeholder:text-faint outline-none transition-colors focus:border-accent disabled:opacity-60 h-12 text-[16px]";
+  "w-full min-w-0 rounded-xl border border-border bg-surface px-4 text-fg placeholder:text-faint outline-none transition-colors focus:border-accent disabled:opacity-60 h-12 text-[16px]";
 export const inputSmCls =
-  "w-full rounded-lg border border-border bg-surface px-3 text-fg placeholder:text-faint outline-none transition-colors focus:border-accent h-10 text-sm";
+  "w-full min-w-0 rounded-lg border border-border bg-surface px-3 text-fg placeholder:text-faint outline-none transition-colors focus:border-accent h-11 text-[16px] sm:h-10 sm:text-sm";
+
+/**
+ * Fields side by side: one per row on phones, the columns from sm: up. The
+ * standard for every form row — never a bare grid-cols-2/3 around inputs, which
+ * squeezes dates and selects out of their box at 375px. `pair` keeps a short
+ * second field (currency, a button) beside the first at every width.
+ */
+export const fieldRow = {
+  2: "grid grid-cols-1 gap-3 sm:grid-cols-2",
+  3: "grid grid-cols-1 gap-3 sm:grid-cols-3",
+  4: "grid grid-cols-1 gap-3 min-[400px]:grid-cols-2 sm:grid-cols-4",
+  pair: "grid grid-cols-[minmax(0,1fr)_auto] gap-3",
+} as const;
 
 export function Input({ className, ...rest }: ComponentProps<"input">) {
   return <input className={cx(inputCls, className)} {...rest} />;
@@ -126,13 +145,14 @@ export function Input({ className, ...rest }: ComponentProps<"input">) {
 export function Textarea({ className, ...rest }: ComponentProps<"textarea">) {
   return <textarea className={cx(inputCls, "h-auto min-h-28 py-3 leading-relaxed", className)} {...rest} />;
 }
+/** A dropdown. The arrow (`.ap-select`, core.css) is drawn in the text colour, so every look and theme shows it. */
 export function Select({ className, ...rest }: ComponentProps<"select">) {
-  return <select className={cx(inputCls, "appearance-none bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236a6a78%22 stroke-width=%222%22><path d=%22m6 9 6 6 6-6%22/></svg>')] bg-[length:16px] bg-[right_14px_center] bg-no-repeat pr-10", className)} {...rest} />;
+  return <select className={cx(inputCls, "ap-select appearance-none pr-10", className)} {...rest} />;
 }
 
 export function Field({ label, hint, htmlFor, children }: { label: string; hint?: string; htmlFor?: string; children: ReactNode }) {
   return (
-    <label htmlFor={htmlFor} className="block">
+    <label htmlFor={htmlFor} className="block min-w-0">
       <span className="mb-1.5 block text-sm font-medium text-fg">{label}</span>
       {children}
       {hint ? <span className="mt-1.5 block text-xs text-muted">{hint}</span> : null}

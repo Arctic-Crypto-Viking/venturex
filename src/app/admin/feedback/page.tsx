@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@core/lib/supabase/server";
 import { Badge, Button, Card, Input, Notice, Select, Textarea, cx, inputSmCls } from "@core/components/ui";
+import { feedbackBuildConfig } from "@core/lib/feedback-build";
 import { decideFeedbackAction, editFeedbackAction, mergeFeedbackAction } from "./actions";
 
 export const dynamic = "force-dynamic"; // per-user data, never prerendered
@@ -9,7 +10,7 @@ type Item = {
   id: string; kind: string; title: string; summary: string; body: string | null; status: string;
   vote_count: number; ai_formatted: boolean; merged_into: string | null; decision_note: string | null;
   decided_at: string | null; published_at: string | null; author_email: string | null;
-  awaiting_review: boolean; vote_threshold: number;
+  awaiting_review: boolean; vote_threshold: number; build_url: string | null;
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -17,12 +18,17 @@ const STATUS_LABEL: Record<string, string> = {
   declined: "Declined", hidden: "Hidden", merged: "Merged",
 };
 const SETTABLE = ["open", "approved", "in_progress", "shipped", "declined", "hidden"];
+/** A virtual status: picking it opens a GitHub issue for Claude and then sets in_progress (migration 030). */
+const BUILD = "build";
+const BUILDABLE = new Set(["open", "approved", "in_progress"]);
 const ON_BOARD = new Set(["open", "approved", "in_progress", "shipped", "declined"]);
 
 /**
  * Admin → Feedback (core, migration 024). Suggestions that reached the vote threshold
  * wait at the top for the go-ahead; nothing is built because of a count alone. Status,
  * note, wording and merges are audited RPCs. The note is shown to users on the board.
+ * "Start the build with Claude" (when FEEDBACK_GITHUB_REPO/TOKEN are set) opens an issue
+ * in the product's repository that the Claude Code GitHub Action turns into a pull request.
  */
 export default async function AdminFeedbackPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const sp = await searchParams;
@@ -40,6 +46,7 @@ export default async function AdminFeedbackPage({ searchParams }: { searchParams
   ];
   const closed = items.filter((i) => ["shipped", "declined", "hidden", "merged"].includes(i.status));
   const mergeTargets = items.filter((i) => ON_BOARD.has(i.status));
+  const build = feedbackBuildConfig();
 
   return (
     <section className="flex flex-col gap-6">
@@ -49,6 +56,20 @@ export default async function AdminFeedbackPage({ searchParams }: { searchParams
           Users vote on each other&apos;s suggestions. At {threshold} votes one waits here for your go-ahead (change the number
           under <Link href="/admin/settings" className="underline underline-offset-4">Settings</Link>, key <code>feedback</code>).
           Users see the title, summary, status and your note, never the author or the original text. Every change is audited.
+        </p>
+        <p className="mt-1 text-sm text-muted">
+          {build ? (
+            <>
+              <strong className="font-medium text-fg">Start the build with Claude</strong> (in the status list) opens an issue in{" "}
+              <code>{build.repo}</code> with the title, summary, votes and your note — never the author or the original text — and
+              Claude answers with a pull request for you to review. The suggestion moves to <em>In progress</em> with the link.
+            </>
+          ) : (
+            <>
+              <strong className="font-medium text-fg">Start the build with Claude</strong> is off: set <code>FEEDBACK_GITHUB_REPO</code> and{" "}
+              <code>FEEDBACK_GITHUB_TOKEN</code> on the server (SETUP-GUIDE Part 17).
+            </>
+          )}
         </p>
       </div>
       {err ? <Notice tone="danger">{err}</Notice> : null}
@@ -61,7 +82,7 @@ export default async function AdminFeedbackPage({ searchParams }: { searchParams
           {list.length === 0 ? (
             <p className="text-sm text-muted">None.</p>
           ) : (
-            list.map((i) => <ItemCard key={i.id} item={i} highlight={i.id === saved} targets={mergeTargets} />)
+            list.map((i) => <ItemCard key={i.id} item={i} highlight={i.id === saved} targets={mergeTargets} canBuild={!!build} />)
           )}
         </div>
       ))}
@@ -70,7 +91,7 @@ export default async function AdminFeedbackPage({ searchParams }: { searchParams
         <details>
           <summary className="cursor-pointer text-sm font-semibold">Shipped, declined, hidden and merged ({closed.length})</summary>
           <div className="mt-3 flex flex-col gap-3">
-            {closed.map((i) => <ItemCard key={i.id} item={i} highlight={i.id === saved} targets={mergeTargets} />)}
+            {closed.map((i) => <ItemCard key={i.id} item={i} highlight={i.id === saved} targets={mergeTargets} canBuild={!!build} />)}
           </div>
         </details>
       ) : null}
@@ -78,7 +99,9 @@ export default async function AdminFeedbackPage({ searchParams }: { searchParams
   );
 }
 
-function ItemCard({ item: i, highlight, targets }: { item: Item; highlight: boolean; targets: Item[] }) {
+function ItemCard({ item: i, highlight, targets, canBuild }: { item: Item; highlight: boolean; targets: Item[]; canBuild: boolean }) {
+  // offered once: a suggestion that already has its issue is not sent to Claude a second time
+  const offerBuild = canBuild && BUILDABLE.has(i.status) && !i.build_url;
   return (
     <Card className={cx(highlight && "ring-2 ring-accent")}>
       <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -93,6 +116,12 @@ function ItemCard({ item: i, highlight, targets }: { item: Item; highlight: bool
       <h4 className="mt-2 font-semibold leading-snug">{i.title}</h4>
       <p className="mt-1 text-sm leading-relaxed">{i.summary}</p>
       {i.decision_note ? <p className="mt-2 text-sm text-muted">Your note: {i.decision_note}</p> : null}
+      {i.build_url ? (
+        <p className="mt-2 text-sm">
+          Claude is building it ·{" "}
+          <a href={i.build_url} target="_blank" rel="noreferrer" className="underline underline-offset-4">open the issue</a>
+        </p>
+      ) : null}
       {i.merged_into ? <p className="mt-2 text-sm text-muted">Merged into {targets.find((t) => t.id === i.merged_into)?.title ?? "another suggestion"}.</p> : null}
 
       <details className="mt-3 text-sm">
@@ -108,10 +137,11 @@ function ItemCard({ item: i, highlight, targets }: { item: Item; highlight: bool
               <span className="mb-1 block text-xs text-muted">Status</span>
               <Select name="status" defaultValue={i.awaiting_review ? "approved" : i.status} className="h-10 text-sm">
                 {SETTABLE.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
+                {offerBuild ? <option value={BUILD}>Start the build with Claude → In progress</option> : null}
               </Select>
             </label>
             <label className="min-w-0 flex-1">
-              <span className="mb-1 block text-xs text-muted">Note for users (optional)</span>
+              <span className="mb-1 block text-xs text-muted">Note for users (optional){offerBuild ? " · Claude reads it too" : ""}</span>
               <input name="note" defaultValue={i.decision_note ?? ""} maxLength={1000} className={inputSmCls} placeholder="e.g. Planned for November" />
             </label>
             <Button type="submit" size="sm" className="h-10">{i.awaiting_review ? "Save decision" : "Save"}</Button>

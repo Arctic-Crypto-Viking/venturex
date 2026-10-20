@@ -6,10 +6,37 @@ import { cx } from "@core/components/ui";
 /**
  * Language picker, beside the Look and Dark/Bright switches: a <details> menu of
  * plain forms, so it works before hydration. Each language is named in its own
- * words; the choice is a cookie (core/src/lib/i18n.ts).
+ * words; the choice is a cookie (core/src/lib/i18n.ts). `inline` drops the menu
+ * and lays the options out in place (a settings page).
  */
-export async function LanguagePicker({ back, className }: { back: string; className?: string }) {
+export async function LanguagePicker({ back, className, inline = false }: { back: string; className?: string; inline?: boolean }) {
   const [locale, t] = await Promise.all([getLocale(), getCoreDict()]);
+  const options = LOCALES.map((l) => (
+    <button
+      key={l}
+      type="submit"
+      name="lang"
+      value={l}
+      lang={l}
+      aria-pressed={l === locale}
+      className={cx(
+        "flex min-h-11 items-center justify-between rounded-lg px-2.5 text-left text-sm transition-colors hover:bg-surface-2",
+        inline && "border border-border px-3.5",
+        l === locale && (inline ? "border-accent bg-accent-soft font-medium" : "bg-surface-2 font-medium"),
+      )}
+    >
+      {LOCALE_NAMES[l]}
+      {l === locale ? <span aria-hidden className="text-accent">✓</span> : null}
+    </button>
+  ));
+  if (inline) {
+    return (
+      <form action={setLanguageAction} aria-label={t.controls.language} className={cx("grid grid-cols-1 gap-2 min-[400px]:grid-cols-2 sm:grid-cols-3", className)}>
+        <input type="hidden" name="back" value={back} />
+        {options}
+      </form>
+    );
+  }
   return (
     <details className={cx("group relative", className)}>
       <summary
@@ -25,20 +52,7 @@ export async function LanguagePicker({ back, className }: { back: string; classN
         className="ap-picker-panel absolute right-0 top-full z-30 mt-2 grid w-44 gap-0.5 rounded-xl border border-border bg-surface p-1.5 text-fg shadow-pop"
       >
         <input type="hidden" name="back" value={back} />
-        {LOCALES.map((l) => (
-          <button
-            key={l}
-            type="submit"
-            name="lang"
-            value={l}
-            lang={l}
-            aria-pressed={l === locale}
-            className={cx("flex min-h-11 items-center justify-between rounded-lg px-2.5 text-left text-sm transition-colors hover:bg-surface-2", l === locale && "bg-surface-2 font-medium")}
-          >
-            {LOCALE_NAMES[l]}
-            {l === locale ? <span aria-hidden className="text-accent">✓</span> : null}
-          </button>
-        ))}
+        {options}
       </form>
     </details>
   );

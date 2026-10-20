@@ -188,12 +188,12 @@ folder the CLI reads:
 - `core_020_admin_delete_account.sql` — `admin_delete_account()`, behind **Admin → Accounts →
   Delete account** (artist-platform 020, 15 Oct 2026). Verbatim in every product, as its next
   migration number. It names no product table (tables and user references come from the
-  catalogue), but it needs the admin/audit SQL below that is not cut yet: `audit_log`,
+  catalogue), and it needs the admin/audit SQL of core_007 and core_009: `audit_log`,
   `log_audit()`, `app.current_impersonation()` (007) and `app.assert_superadmin()` (009). The
   product says which Storage buckets hold an account's files: `admin.storageBuckets` in
   `src/product.tsx`.
-- Still to cut (needs a session with Postgres so the RLS suite runs green, PLATFORM-CORE §4
-  rule 4): the generalised admin/audit and admin RPCs (`app.overview_extra`,
-  `app.admin_account_extra`, `admin_list_accounts`, `admin_account_detail`, settings/flag/grant
-  RPCs). Today they exist as artist-platform 007 + 009 + 014 with artist code mixed in.
-  A new product before that cut copies those three files and replaces the hook bodies.
+- The generalised admin/audit and admin RPCs (`app.overview_extra`, `app.admin_account_extra`,
+  `admin_list_accounts`, `admin_account_detail`, settings/flag/grant RPCs) were cut on 18 Oct 2026 as
+  `core_007_admin_audit.sql` and `core_009_admin_rpcs.sql`; InvestX and Venturex use them. Mainfloor still
+  runs its first forms (artist-platform 007 + 009 + 014, artist code mixed in) and moves to the core files
+  when it next touches them.

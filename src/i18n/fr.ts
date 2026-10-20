@@ -20,6 +20,8 @@ export const fr: CoreDict = {
     sendFailed: "Impossible d'envoyer l'e-mail",
     tooMany: "Trop d'e-mails de connexion en peu de temps : attendez quelques minutes avant d'en demander un autre.",
     notAuthorized: "Cette adresse ne peut pas encore recevoir d'e-mails de connexion. Demandez un lien de connexion à la personne qui vous a invité.",
+    inviteOnly: "Aucun compte n'existe pour cette adresse, et les nouveaux comptes sont pour l'instant sur invitation. Demandez un lien de connexion à la personne qui vous a invité.",
+    inviteOnlyNote: "Les nouveaux comptes sont pour l'instant sur invitation.",
     codeFailed: "Ce code n'a pas fonctionné",
     privacy: "Confidentialité",
     signedInAs: "Connecté en tant que",

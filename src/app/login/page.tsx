@@ -9,6 +9,7 @@ import { SignOutButton } from "@core/components/sign-out-button";
 import { product } from "@product";
 import { getCoreDict } from "@core/i18n";
 import { LanguagePicker } from "@core/components/language-picker";
+import { signupOpen } from "@core/lib/signup-open";
 
 export async function generateMetadata() {
   return { title: (await getCoreDict()).login.signIn };
@@ -19,10 +20,11 @@ export async function generateMetadata() {
  * product.signIn adds a photo (a band above the form on phones, half the page
  * from 1024px) and a label such as "Beta". A person who is already signed in
  * sees which login and can continue or sign out, so switching login never
- * needs a hidden menu.
+ * needs a hidden menu. When Supabase Auth's sign-up switch is off (lib/signup-open),
+ * the form only signs existing logins in and says the product is invite-only.
  */
 export default async function LoginPage() {
-  const [theme, template, user, t] = await Promise.all([getTheme(), getTemplate(), getCurrentUser(), getCoreDict()]);
+  const [theme, template, user, t, open] = await Promise.all([getTheme(), getTemplate(), getCurrentUser(), getCoreDict(), signupOpen()]);
   const image = product.signIn?.image;
   const label = product.signIn?.label;
   const lockup = (
@@ -56,7 +58,7 @@ export default async function LoginPage() {
           </div>
         ) : null}
         <Suspense fallback={null}>
-          <LoginForm mark={lockup} appName={product.brand.name} signupPath={product.signupPath} privacyPath={product.privacyPath} t={t.login} />
+          <LoginForm mark={lockup} appName={product.brand.name} signupPath={product.signupPath} privacyPath={product.privacyPath} signupOpen={open} t={t.login} />
         </Suspense>
         <div className="flex justify-center gap-1 pb-8"><LanguagePicker back="/login" /><TemplatePicker template={template} back="/login" /><ThemeToggle theme={theme} back="/login" /></div>
       </div>

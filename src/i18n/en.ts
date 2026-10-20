@@ -18,6 +18,8 @@ export const en = {
     sendFailed: "Could not send the e-mail",
     tooMany: "Too many sign-in e-mails in a short time — wait a few minutes before asking for another one.",
     notAuthorized: "This address can't receive sign-in e-mail yet. Ask the person who invited you for a sign-in link.",
+    inviteOnly: "There is no account for this address, and new accounts are by invitation for now. Ask the person who invited you for a sign-in link.",
+    inviteOnlyNote: "New accounts are by invitation for now.",
     codeFailed: "That code didn't work",
     privacy: "Privacy",
     signedInAs: "Signed in as",

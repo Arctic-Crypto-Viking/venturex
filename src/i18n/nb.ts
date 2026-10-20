@@ -20,6 +20,8 @@ export const nb: CoreDict = {
     sendFailed: "Kunne ikke sende e-posten",
     tooMany: "For mange innloggings-e-poster på kort tid – vent noen minutter før du ber om en ny.",
     notAuthorized: "Denne adressen kan ikke motta innloggings-e-post ennå. Be personen som inviterte deg, om en innloggingslenke.",
+    inviteOnly: "Det finnes ingen konto for denne adressen, og nye kontoer er foreløpig bare på invitasjon. Be personen som inviterte deg, om en innloggingslenke.",
+    inviteOnlyNote: "Nye kontoer er foreløpig bare på invitasjon.",
     codeFailed: "Den koden virket ikke",
     privacy: "Personvern",
     signedInAs: "Logget inn som",

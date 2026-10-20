@@ -28,15 +28,19 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   };
 }
 
-/** The accounts the user can open (RLS already limits this to memberships). */
+/**
+ * The accounts the user can open (RLS already limits this to memberships).
+ * A failed read throws: an empty list means "no account yet" and sends the person
+ * to the sign-up wizard, so a passing database error must never look like one.
+ */
 export async function getMyAccounts(): Promise<CurrentAccount[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("account_members")
     .select("role, accounts ( id, name, slug, access_status, is_internal )")
     .eq("status", "active");
-  if (error || !data) return [];
-  return data
+  if (error) throw new Error(`Could not read your accounts: ${error.message}`);
+  return (data ?? [])
     .map((m) => {
       const a = m.accounts as unknown as {
         id: string; name: string; slug: string; access_status: string; is_internal: boolean;

@@ -12,6 +12,7 @@ export function AdminNav({ extra }: { extra: Array<[string, string]> }) {
     ["/admin/accounts", "Accounts"],
     ...extra,
     ["/admin/feedback", "Feedback"],
+    ["/admin/social", "Social"],
     ["/admin/plans", "Plans & features"],
     ["/admin/settings", "Settings"],
   ];

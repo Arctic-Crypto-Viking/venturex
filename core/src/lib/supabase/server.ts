@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { requirePublicEnv } from "@core/lib/env";
+import { clientHeaders } from "@core/lib/supabase/client-headers";
 
 /**
  * Server client for Server Components, Server Functions and Route Handlers.
@@ -10,8 +11,11 @@ import { requirePublicEnv } from "@core/lib/env";
  */
 export async function createClient() {
   const cookieStore = await cookies(); // request-time API: marks the route dynamic
+  const requestHeaders = await headers();
   const { supabaseUrl, supabaseAnonKey } = requirePublicEnv();
   return createServerClient(supabaseUrl, supabaseAnonKey, {
+    // the browser's device and IP on the sessions Auth creates or refreshes here
+    global: { headers: clientHeaders(requestHeaders) },
     cookies: {
       getAll() {
         return cookieStore.getAll();

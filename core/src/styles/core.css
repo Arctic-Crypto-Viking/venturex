@@ -294,3 +294,13 @@
   [data-template="forest"] .ap-content { grid-column: 2; }
 }
 [data-template="forest"] .ap-link[aria-current="page"] { background: color-mix(in srgb, var(--header-fg) 12%, transparent); color: var(--header-fg); }
+
+/* Dropdown arrow (ui.tsx Select): two gradient triangles in the text colour, so it
+   follows every look and both themes (a baked SVG colour was near-invisible on dark). */
+.ap-select {
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 21px) 50%, calc(100% - 15px) 50%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+.ap-select:disabled { background-image: none; }

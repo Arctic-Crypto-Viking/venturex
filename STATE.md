@@ -37,8 +37,8 @@ whenever a line below stops being true.
 1. **Supabase project**, region eu-central-1 (Frankfurt). Keys into `.env.local`
    (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`,
    `NEXT_PUBLIC_SITE_URL`). Then `npx supabase link --project-ref <ref>` and
-   `npx supabase db push` (nine migrations; the suite is green). The free plan pauses a project
-   after seven idle days; resume it in the dashboard before a push.
+   `npx supabase db push` (nine migrations; the suite is green). (The organisation is on Supabase
+   Pro since 19–20 Oct 2026, so projects no longer pause when idle.)
 2. **First sign-in** (done on 19 Oct for `a.crypto.viking@gmail.com`; kept for a second login): `node scripts/dev-login-link.mjs <his e-mail>` (creates his `public.users`
    row on the first visit). Then in the Supabase SQL editor, in this order:
    ```sql

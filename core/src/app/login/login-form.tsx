@@ -18,8 +18,8 @@ import type { CoreDict } from "@core/i18n/en";
  * /auth/confirm link (see docs/SETUP-GUIDE.md Part 7b).
  */
 export function LoginForm({
-  mark, appName, signupPath, privacyPath, t,
-}: { mark: ReactNode; appName: string; signupPath?: string; privacyPath?: string; t: CoreDict["login"] }) {
+  mark, appName, signupPath, privacyPath, signupOpen = true, t,
+}: { mark: ReactNode; appName: string; signupPath?: string; privacyPath?: string; signupOpen?: boolean; t: CoreDict["login"] }) {
   const params = useSearchParams();
   const next = safeNext(params.get("next")); // a path on this site only — it ends in window.location.assign()
   const linkFailed = params.get("error") === "link";
@@ -38,7 +38,8 @@ export function LoginForm({
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: `${publicEnv.siteUrl}/auth/callback?next=${encodeURIComponent(next)}` },
+        // sign-up closed in Supabase Auth: only existing logins get a code (an invited person already has one)
+        options: { emailRedirectTo: `${publicEnv.siteUrl}/auth/callback?next=${encodeURIComponent(next)}`, shouldCreateUser: signupOpen },
       });
       if (error) throw error;
       setState("sent");
@@ -48,7 +49,9 @@ export function LoginForm({
       setMessage(
         /rate limit|too many|security purposes/i.test(raw)
           ? t.tooMany
-          : /not authorized/i.test(raw)
+          : /signups? not allowed|signups? (are )?disabled|user not found/i.test(raw)
+            ? t.inviteOnly
+            : /not authorized/i.test(raw)
             ? // Supabase's built-in mailer only delivers to the project's own team (SETUP-GUIDE Part 12, stage 1)
               t.notAuthorized
             : raw,
@@ -136,6 +139,7 @@ export function LoginForm({
               {state === "sending" ? t.sending : creating ? t.sendTheLink : t.sendALink}
             </Button>
             {state === "error" ? <p className="text-sm text-danger">{message}</p> : null}
+            {!signupOpen && state !== "error" ? <p className="text-sm text-muted">{t.inviteOnlyNote}</p> : null}
           </form>
         )}
       </div>

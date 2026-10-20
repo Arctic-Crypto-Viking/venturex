@@ -20,6 +20,8 @@ export const es: CoreDict = {
     sendFailed: "No se pudo enviar el correo",
     tooMany: "Demasiados correos de inicio de sesión en poco tiempo: espera unos minutos antes de pedir otro.",
     notAuthorized: "Esta dirección aún no puede recibir correos de inicio de sesión. Pide un enlace a la persona que te invitó.",
+    inviteOnly: "No hay ninguna cuenta para esta dirección y, por ahora, las cuentas nuevas son solo por invitación. Pide un enlace de inicio de sesión a la persona que te invitó.",
+    inviteOnlyNote: "Por ahora, las cuentas nuevas son solo por invitación.",
     codeFailed: "Ese código no ha funcionado",
     privacy: "Privacidad",
     signedInAs: "Sesión iniciada como",

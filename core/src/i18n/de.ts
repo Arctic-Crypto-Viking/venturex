@@ -20,6 +20,8 @@ export const de: CoreDict = {
     sendFailed: "Die E-Mail konnte nicht gesendet werden",
     tooMany: "Zu viele Anmelde-E-Mails in kurzer Zeit – warte ein paar Minuten, bevor du eine neue anforderst.",
     notAuthorized: "An diese Adresse können noch keine Anmelde-E-Mails gehen. Bitte die Person, die dich eingeladen hat, um einen Anmeldelink.",
+    inviteOnly: "Für diese Adresse gibt es kein Konto, und neue Konten gibt es vorerst nur auf Einladung. Bitte die Person, die dich eingeladen hat, um einen Anmeldelink.",
+    inviteOnlyNote: "Neue Konten gibt es vorerst nur auf Einladung.",
     codeFailed: "Dieser Code hat nicht funktioniert",
     privacy: "Datenschutz",
     signedInAs: "Angemeldet als",
